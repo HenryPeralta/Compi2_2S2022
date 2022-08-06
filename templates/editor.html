@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" type="text/css" href="../static/index.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="../static/codemirror/lib/codemirror.js"></script>
+    <link href="../static/codemirror/lib/codemirror.css" rel="stylesheet"/>
+    <script src="../static/codemirror/mode/rust/rust.js"></script>
+    <script src="../static/codemirror/addon/edit/closetag.js"></script>
+    <link href="../static/codemirror/theme/darcula.css" rel="stylesheet"/>
+    <title>Interprete-DB-Rust</title>
+</head>
+<body>
+    <header class="header">
+        <center><p class="nombre">Interprete DB Rust</p></center>
+        <div class="container logo-nav-container">
+            <nav class="navegation">
+                <ul>
+                    <li class="item"><a>Menu</a></li>
+                    <li class="item"><input type="file" style="display:none" name="archivos" id="archivos"><a onclick="document.getElementById('archivos').click()">Abrir</a></li>
+                    <li class="item"><a>Pestaña</a></li>
+                    <li class="item"><a>Ejecucion</a></li>
+                    <li class="item"><a>Reportes</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main class="main">
+        <div class="container">
+            <div class="contenedor1">
+                <ul class="pestana" id="buttontextareas">
+                    <li class="listaPestana">
+                        <a class="pestanaActiva" data-bs-toggle="tab" href="#tab1">tab1</a> 
+                    </li>
+                </ul>
+                <div id="textareas" class="tabContenido">
+                    <div class="tabla" id="tab1">
+                        <form name="sentMessage" method="POST">
+                            <textarea class="numerado" type="text" name="editor" id="editor">{{entrada}}</textarea>
+                            <button class="boton">Analizar</button>
+                        </form>
+                        <!--<textarea class="numerado" id="editor">{{entrada}}</textarea>-->
+                    </div>
+                </div>
+                <!--<button class="boton">Analizar</button>-->
+            </div>
+            <div class="contenedor2">
+                <ul class="pestana">
+                    <li class="consola">Consola</li>
+                </ul>
+                <div id="textareas2" class="tabContenido">
+                    <div class="tabla2">
+                        <form name="sentMessage" method="POST">
+                            <textarea class="numerado" type="text" name="editor2" id="editor2">{{salida}}</textarea>
+                        </form>
+                        <!--<textarea class="numerado" id="editor2"></textarea>-->
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </main>
+    <script type="text/javascript" src="../static/index.js"></script> 
+</body>
+<footer>
+    </br>
+</footer>
+</html>

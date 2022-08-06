@@ -1,0 +1,130 @@
+body{
+    font-family: Georgia, times, serif;
+    color: #333;
+    font-size: 1.2rem;
+    line-height: 1.6rem;
+    margin: 0;
+}
+
+p{
+    margin-bottom: 0.5em;
+}
+
+footer{
+    width: 100%;
+}
+
+.container{
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.contenedor1{
+    background: white;
+}
+
+.contenedor2{
+    background: white;
+}
+
+.header{
+    background: #333;
+    color: white;
+    padding: 0.5rem 0;
+    /*position: fixed;*/
+    left: 0;
+    top: 0;
+    right: 0;
+}
+
+.header a{
+    color: white;
+    text-decoration: none;
+}
+
+.logo-nav-container{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.navegation ul{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.navegation ul .item{
+    display: inline-block;
+}
+
+.navegation ul .item a{
+    display: block;
+    padding: 0.5rem 1rem;
+    transition: all 0.4s linear;
+}
+
+.navegation ul .item a:hover{
+    background: #4a4a4a;
+}
+
+/*.navegation .despliege{
+    display: none;
+}
+
+.navegation ul .item:hover .despliege{
+    display: block;
+    position: fixed;
+    margin: 0;
+    padding: 0.5rem 1rem;
+    background: #333;
+    z-index: 1;
+}*/
+
+.nombre{
+    font-size: 2.0em;
+}
+
+.main{
+    padding-top: 2rem;
+}
+
+.pestana{
+    float: top;
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.listaPestana{
+    background: #333;
+    padding: 0rem 0rem;
+    display: inline-block;
+}
+
+.pestanaActiva{
+    display: block;
+    color: white;
+    padding: 0.5rem 0.5rem;
+    transition: all 0.4s linear;
+    text-decoration: none;
+}
+
+.pestanaActiva:hover{
+    background: #4a4a4a;
+}
+
+.numerado{
+    padding: 20px 0px 20px 10px;
+    width: 550px;
+    height: 550px;
+    resize: none;
+}
+
+.consola{
+    padding: 0.5rem 0.5rem;
+}
