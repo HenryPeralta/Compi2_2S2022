@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset = 'utf-8' />
+<title>Tabla de simbolos</title>
+<meta name = 'viewport' content = 'initial-scale=1.0; maximum-scale=1.0; width=device-width;'>
+<Style type = 'text/css'>
+@import url(https://fonts.googleapis.com/css?family=Roboto:400,500,700,300,100);;
+body{
+    background: rgba(204, 204, 204, 1);
+    background: -moz-linear-gradient(top, rgba(204, 204, 204, 1) 0%, rgba(255, 255, 255, 1) 100%);
+    background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(204, 204, 204, 1)), color - stop(100%, rgba(255, 255, 255, 1)));
+    background: -webkit-linear-gradient(top, rgba(204, 204, 204, 1) 0%, rgba(255, 255, 255, 1) 100%);
+    background: -o-linear-gradient(top, rgba(204, 204, 204, 1) 0%, rgba(255, 255, 255, 1) 100%);
+    background: -ms-linear-gradient(top, rgba(204, 204, 204, 1) 0%, rgba(255, 255, 255, 1) 100%);
+    background: linear-gradient(to bottom, rgba(204, 204, 204, 1) 0%, rgba(255, 255, 255, 1) 100%);
+    filter: progid: DXImageTransform.Microsoft.gradient(startColorstr = '#cccccc', endColorstr = '#ffffff', GradientType = 0);
+    font-family: 'Roboto', helvetica, arial, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    text-rendering: optimizeLegibility;
+}
+div.table-title{
+    display: block;
+    margin: auto;
+    max-width: 600px;
+   padding: 5px;
+    width: 100%;
+}
+.table-title h3{
+    color: black;
+    font-size: 30px;
+    font-weight: 400;
+    font-style:normal;
+    text-shadow: 1px 1px black;
+    text-transform:uppercase;
+}
+.table-fill{
+    background: white;
+    border-radius:3px;
+    border-color: black;
+    border-collapse: collapse;
+    height: 320px;
+    margin: auto;
+    max-width: 600px;
+    padding: 5px;
+    width: 100%;
+    box-shadow: 30px 30px 30px 30px rgba(1, 0.1, 0.1, 0.1);
+    animation: float 5s infinite;
+}
+th{
+    color:#D5DDE5;
+    background:#1b1e24;
+    border-bottom:4px solid #9ea7af;
+    border-right: 1px solid #343a45;
+    font-size:23px;
+    font-weight: 100;
+    padding: 24px;
+    text-align:left;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    vertical-align:middle;
+}
+th:last-child {
+    border-top-right-radius:3px;
+    border-right:none;
+}
+tr{
+    border-top: 1px solid #C1C3D1;
+    border-bottom: 1px solid #C1C3D1;
+    color:#666B85;
+    font-size:16px;
+    font-weight:normal;
+    text-shadow: 0 1px 1px rgba(256, 256, 256, 0.1);
+}
+tr:first-child{
+    border-top:none;
+}
+tr:last-child{
+    border-bottom:none;
+}
+tr:last-child td:first-child{
+    border-bottom-left-radius:3px;
+}
+tr:last-child td:last-child{
+    border-bottom-right-radius:3px;
+}
+td{
+    background:#FFFFFF;
+    padding: 20px;
+    text-align:left;
+    vertical-align:middle;
+    font-weight:300;
+    font-size:18px;
+    text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1);
+    border-right: 1px solid #C1C3D1;
+}
+td:last-child{
+    border-right: 0px;
+}
+th.text-left {
+    text-align: left;
+}
+th.text-center {
+    text-align: center;
+}
+th.text-right {
+    text-align: right;
+}
+td.text-left {
+    text-align: left;
+}
+td.text-center {
+    text-align: center;
+}
+td.text-right {
+    text-align: right;
+}
+</Style>
+</head>
+<body>
+</div>
+<div class='table-title'>
+<h3>Tabla de Simbolos</h3>
+</div>
+<table class='table-fill'>
+<thead>
+<tr>
+<th class='text-left'>No.</th>
+<th class='text-left'>Id</th>
+<th class='text-left'>Tipo Simbolo</th>
+<th class='text-left'>Tipo Dato</th>
+<th class='text-left'>Ambito</th>
+<th class='text-left'>Fila</th>
+<th class='text-left'>Columna</th>
+</tr>
+</thead>
+<tbody class='table-hover'><tr><td>1</td><td>q</td><td>Variable</td><td>BOOL</td><td>Global</td><td>1</td><td>1</td><tr>

@@ -1,5 +1,6 @@
 import ply.yacc as yacc
 import ply.lex as lex
+from tab_simbolos import TIPO_DATO
 
 reserved = {
     #tipo de dato
@@ -239,6 +240,7 @@ def p_instrucciones_instruccion(t):
 def p_instruccion(t):
     '''
         instruccion : impresion
+                    | declaracion
     '''
     t[0] = t[1]
 
@@ -318,6 +320,44 @@ def p_impresion(t):
         t[0] = Print(t[4])
     elif(t[1] == "println"):
         t[0] = Println(t[4])
+
+def p_declaracion_mutable(t):
+    '''
+        declaracion : LET MUT ID IGUAL expresion PUNTOYCOMA
+    '''
+    t[0] = AsignacionMutable(t[3], t[5], t.slice[1].lineno, 1)
+
+def p_declaracion_mutable_tipo(t):
+    '''
+        declaracion : LET MUT ID DOSPUNTOS tipo IGUAL expresion PUNTOYCOMA 
+    '''
+    if(t[5] == "i64"):
+        t[0] = AsignacionMutableTipo(t[3], t[7], TIPO_DATO.I64, t.slice[1].lineno, 1)
+    elif(t[5] == "f64"):
+        t[0] = AsignacionMutableTipo(t[3], t[7], TIPO_DATO.F64, t.slice[1].lineno, 1)
+    elif(t[5] == "bool"):
+        t[0] = AsignacionMutableTipo(t[3], t[7], TIPO_DATO.BOOL, t.slice[1].lineno, 1)
+    elif(t[5] == "char"):
+        t[0] = AsignacionMutableTipo(t[3], t[7], TIPO_DATO.CHAR, t.slice[1].lineno, 1)
+    if(t[5] == "String"):
+        t[0] = AsignacionMutableTipo(t[3], t[7], TIPO_DATO.STRING, t.slice[1].lineno, 1)
+    if(t[5] == "str"):
+        t[0] = AsignacionMutableTipo(t[3], t[7], TIPO_DATO.STR, t.slice[1].lineno, 1)
+    elif(t[5] == "usize"):
+        t[0] = AsignacionMutableTipo(t[3], t[7], TIPO_DATO.USIZE, t.slice[1].lineno, 1)
+
+def p_tipo(t):
+    '''
+        tipo : I64
+             | F64
+             | BOOL
+             | CHAR
+             | STRING
+             | STR
+             | USIZE
+             | VEC
+    '''
+    t[0] = t[1]
 
 def p_expresion_numero(t):
     '''
