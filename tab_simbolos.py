@@ -11,10 +11,11 @@ class TIPO_DATO(Enum):
     #falta -> Arreglos, Vectores y Structs
 
 class Simbolo():
-    def __init__(self, id, tipo, valor, ambito, linea, columna):
+    def __init__(self, id, tipo, valor, mutable, ambito, linea, columna):
         self.id = id
         self.tipo = tipo
         self.valor = valor
+        self.mutable = mutable
         self.ambito = ambito
         self.linea = linea
         self.columna = columna
@@ -62,6 +63,15 @@ class TablaSimbolos():
             print('Error: variable ', simbolo.id, ' no definida')
         else:
             self.simbolos[simbolo.id] = simbolo
+
+    def existeVariable(self, id):
+        if not id in self.simbolos:
+            return False
+        else:
+            return True
+
+    def actualizarValor(self, simbolo, exp):
+        self.simbolos[simbolo.id].valor = exp
 
     def GenerarTablaSimbolos(self):
         file = open ("./reportes/tabsimbolos.html", "w")
@@ -248,7 +258,6 @@ class TablaSimbolos():
         file.close()
 
     def reiniciar(self):
-        print("reinicio")
         self.simbolos.clear()
         self.funcion.clear()
         self.structs.clear()

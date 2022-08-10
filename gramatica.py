@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 import ply.yacc as yacc
 import ply.lex as lex
 from tab_simbolos import TIPO_DATO
@@ -241,6 +242,8 @@ def p_instruccion(t):
     '''
         instruccion : impresion
                     | declaracion
+                    | asignacion
+                    | sentencia_if
     '''
     t[0] = t[1]
 
@@ -339,12 +342,43 @@ def p_declaracion_mutable_tipo(t):
         t[0] = AsignacionMutableTipo(t[3], t[7], TIPO_DATO.BOOL, t.slice[1].lineno, 1)
     elif(t[5] == "char"):
         t[0] = AsignacionMutableTipo(t[3], t[7], TIPO_DATO.CHAR, t.slice[1].lineno, 1)
-    if(t[5] == "String"):
+    elif(t[5] == "String"):
         t[0] = AsignacionMutableTipo(t[3], t[7], TIPO_DATO.STRING, t.slice[1].lineno, 1)
-    if(t[5] == "str"):
+    elif(t[5] == "str"):
         t[0] = AsignacionMutableTipo(t[3], t[7], TIPO_DATO.STR, t.slice[1].lineno, 1)
     elif(t[5] == "usize"):
         t[0] = AsignacionMutableTipo(t[3], t[7], TIPO_DATO.USIZE, t.slice[1].lineno, 1)
+
+def p_declaracion_no_mutable(t):
+    '''
+        declaracion : LET ID IGUAL expresion PUNTOYCOMA
+    '''
+    t[0] = AsignacionNoMutable(t[2], t[4], t.slice[1].lineno, 1)
+
+def p_declaracion_no_mutable_tipo(t):
+    '''
+        declaracion : LET ID DOSPUNTOS tipo IGUAL expresion PUNTOYCOMA
+    '''
+    if(t[4] == "i64"):
+        t[0] = AsignacionNoMutableTipo(t[2], t[6], TIPO_DATO.I64, t.slice[1].lineno, 1)
+    elif(t[4] == "f64"):
+        t[0] = AsignacionNoMutableTipo(t[2], t[6], TIPO_DATO.F64, t.slice[1].lineno, 1)
+    elif(t[4] == "bool"):
+        t[0] = AsignacionNoMutableTipo(t[2], t[6], TIPO_DATO.BOOL, t.slice[1].lineno, 1)
+    elif(t[4] == "char"):
+        t[0] = AsignacionNoMutableTipo(t[2], t[6], TIPO_DATO.CHAR, t.slice[1].lineno, 1)
+    elif(t[4] == "String"):
+        t[0] = AsignacionNoMutableTipo(t[2], t[6], TIPO_DATO.STRING, t.slice[1].lineno, 1)
+    elif(t[4] == "str"):
+        t[0] = AsignacionNoMutableTipo(t[2], t[6], TIPO_DATO.STR, t.slice[1].lineno, 1)
+    elif(t[4] == "usize"):
+        t[0] = AsignacionNoMutableTipo(t[2], t[6], TIPO_DATO.USIZE, t.slice[1].lineno, 1)
+
+def p_asignacion_nuevo_valor(t):
+    '''
+        asignacion : ID IGUAL expresion PUNTOYCOMA
+    '''
+    t[0] = AsignacionNuevoValor(t[1], t[3], t.slice[1].lineno, 1)
 
 def p_tipo(t):
     '''
@@ -358,6 +392,41 @@ def p_tipo(t):
              | VEC
     '''
     t[0] = t[1]
+
+def p_sentencia_if(t):
+    '''
+       sentencia_if : IF expresion LLAVEIZQ instrucciones LLAVEDER
+    '''
+    t[0] = IF(t[2], t[4])
+
+def p_sentencia_if_elseif(t):
+    '''
+        sentencia_if : IF expresion LLAVEIZQ instrucciones LLAVEDER elseif  
+    '''
+    t[0] = IfElseIf(t[2], t[4], t[6])
+
+def p_lista_else_if(t):
+    '''
+        elseif : elseif lista_elseif
+    '''
+    t[1].append(t[2])
+    t[0] = t[1]
+
+def p_lista_esle_if2(t):
+    '''
+        elseif : lista_elseif
+    '''
+    t[0] = [t[1]]
+
+def p_else_elseif(t):
+    '''
+        lista_elseif : ELSE IF expresion LLAVEIZQ instrucciones LLAVEDER
+                     | ELSE LLAVEIZQ instrucciones LLAVEDER
+    '''
+    if(t[2] == "if"):
+        t[0] = IF(t[3], t[5])
+    else:
+        t[0] = ELSE(t[3])
 
 def p_expresion_numero(t):
     '''
