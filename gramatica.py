@@ -200,7 +200,8 @@ t_ignore = " \t"
 
 def t_newline(t):
     r'\n+'
-    t.lexer.lineno += t.value.count("\n")
+    #t.lexer.lineno += t.value.count("\n")
+    t.lexer.lineno += len(t.value)
 
 def t_error(t):
     print(f'Error léxico: Caracter {t.value[0]} no reconocido')
@@ -244,6 +245,9 @@ def p_instruccion(t):
                     | declaracion
                     | asignacion
                     | sentencia_if
+                    | ciclo_while
+                    | ciclo_for
+                    | declarar_arreglo
     '''
     t[0] = t[1]
 
@@ -390,6 +394,7 @@ def p_tipo(t):
              | STR
              | USIZE
              | VEC
+             | ID
     '''
     t[0] = t[1]
 
@@ -397,13 +402,13 @@ def p_sentencia_if(t):
     '''
        sentencia_if : IF expresion LLAVEIZQ instrucciones LLAVEDER
     '''
-    t[0] = IF(t[2], t[4])
+    t[0] = IF(t[2], t.slice[1].lineno, 1, t[4])
 
 def p_sentencia_if_elseif(t):
     '''
         sentencia_if : IF expresion LLAVEIZQ instrucciones LLAVEDER elseif  
     '''
-    t[0] = IfElseIf(t[2], t[4], t[6])
+    t[0] = IfElseIf(t[2], t.slice[1].lineno, 1, t[4], t[6])
 
 def p_lista_else_if(t):
     '''
@@ -424,9 +429,67 @@ def p_else_elseif(t):
                      | ELSE LLAVEIZQ instrucciones LLAVEDER
     '''
     if(t[2] == "if"):
-        t[0] = IF(t[3], t[5])
+        t[0] = IF(t[3], t.slice[1].lineno, 1, t[5])
     else:
         t[0] = ELSE(t[3])
+
+def p_ciclo_while(t):
+    '''
+        ciclo_while : WHILE expresion LLAVEIZQ instrucciones LLAVEDER
+    '''
+    t[0] = CicloWhile(t[2], t.slice[1].lineno, 1, t[4])
+
+def p_ciclo_for(t):
+    '''
+        ciclo_for : FOR ID IN expresion PUNTO PUNTO expresion LLAVEIZQ instrucciones LLAVEDER
+    '''
+    t[0] = CicloFor(t[2], t[4], t[7], t[9], t.slice[1].lineno, 1)
+
+def p_declaracion_arreglo_mutable(t):
+    '''
+        declarar_arreglo : LET MUT ID IGUAL CORCHIZQ llamada_parametros CORCHDER PUNTOYCOMA
+    '''
+    t[0] = AsignacionArregloMutable(t[3], t[6], t.slice[1].lineno, 1)
+
+def p_declaracion_arreglo_mutable_tipo(t):
+    '''
+        declarar_arreglo : LET MUT ID DOSPUNTOS CORCHIZQ tipo PUNTOYCOMA expresion CORCHDER IGUAL CORCHIZQ llamada_parametros CORCHDER PUNTOYCOMA
+    '''
+    if(t[6] == "i64"):
+        t[0] = AsignacionArregloMutableTipo(t[3], t[12], TIPO_DATO.I64, t[8], t.slice[1].lineno, 1)
+    elif(t[6] == "f64"):
+        t[0] = AsignacionArregloMutableTipo(t[3], t[12], TIPO_DATO.F64, t[8], t.slice[1].lineno, 1)
+    elif(t[6] == "bool"):
+        t[0] = AsignacionArregloMutableTipo(t[3], t[12], TIPO_DATO.BOOL, t[8], t.slice[1].lineno, 1)
+    elif(t[6] == "char"):
+        t[0] = AsignacionArregloMutableTipo(t[3], t[12], TIPO_DATO.CHAR, t[8], t.slice[1].lineno, 1)
+    elif(t[6] == "String"):
+        t[0] = AsignacionArregloMutableTipo(t[3], t[12], TIPO_DATO.STRING, t[8], t.slice[1].lineno, 1)
+    elif(t[6] == "str"):
+        t[0] = AsignacionArregloMutableTipo(t[3], t[12], TIPO_DATO.STR, t[8], t.slice[1].lineno, 1)
+    elif(t[6] == "usize"):
+        t[0] = AsignacionArregloMutableTipo(t[3], t[12], TIPO_DATO.USIZE, t[8], t.slice[1].lineno, 1)
+    else:
+        t[0] = AsignacionArregloMutableTipo(t[3], t[12], TIPO_DATO.ID, t[8], t.slice[1].lineno, 1)
+
+def p_lista_llamada_parametros(t):
+    '''
+        llamada_parametros : llamada_parametros COMA valor_parametro
+    '''
+    t[1].append(t[3])
+    t[0] = t[1]
+
+def p_llamada_parametros(t):
+    '''
+        llamada_parametros : valor_parametro
+    '''
+    t[0] = [t[1]]
+
+def p_valor_parametro(t):
+    '''
+        valor_parametro : expresion
+    '''
+    t[0] = t[1]
 
 def p_expresion_numero(t):
     '''
