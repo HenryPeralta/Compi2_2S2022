@@ -67,12 +67,6 @@ reserved = {
     'continue' : 'CONTINUE',
     'return' : 'RETURN',
 
-    'push' : 'PUSH',
-    'insert' : 'INSERT',
-    'remove' : 'REMOVE',
-    'contains' : 'CONTAINS',
-    'len' : 'LEN',
-
     #modulos
     'mod' : 'MOD',
     'pub' : 'PUB',
@@ -248,6 +242,8 @@ def p_instruccion(t):
                     | ciclo_while
                     | ciclo_for
                     | declarar_arreglo
+                    | sen_transferencia
+                    | return
     '''
     t[0] = t[1]
 
@@ -317,6 +313,12 @@ def p_expresion_parentesis(t):
         expresion : PARENTIZQ expresion PARENTDER
     '''
     t[0] = t[2]
+
+def p_fn_nativas_vectores(t):
+    '''
+        expresion : expresion PUNTO LEN PARENTIZQ PARENTDER
+    '''
+    t[0] = ExpresionFnLen(t[1], FUNCIONES_NATIVAS_VECTORES.LEN)
 
 def p_impresion(t):
     '''
@@ -398,6 +400,12 @@ def p_tipo(t):
     '''
     t[0] = t[1]
 
+def p_return(t):
+    '''
+        return : RETURN expresion PUNTOYCOMA 
+    '''
+    t[0] = InstruccionReturn(t[2])
+
 def p_sentencia_if(t):
     '''
        sentencia_if : IF expresion LLAVEIZQ instrucciones LLAVEDER
@@ -445,6 +453,16 @@ def p_ciclo_for(t):
     '''
     t[0] = CicloFor(t[2], t[4], t[7], t[9], t.slice[1].lineno, 1)
 
+def p_sen_transferencia(t):
+    '''
+        sen_transferencia : BREAK PUNTOYCOMA
+                          | CONTINUE PUNTOYCOMA
+    '''
+    if(t[1] == "break"):
+        t[0] = ExisteBreak()
+    elif(t[1] == "continue"):
+        t[0] = ExisteContinue()
+
 def p_declaracion_arreglo_mutable(t):
     '''
         declarar_arreglo : LET MUT ID IGUAL CORCHIZQ llamada_parametros CORCHDER PUNTOYCOMA
@@ -471,6 +489,33 @@ def p_declaracion_arreglo_mutable_tipo(t):
         t[0] = AsignacionArregloMutableTipo(t[3], t[12], TIPO_DATO.USIZE, t[8], t.slice[1].lineno, 1)
     else:
         t[0] = AsignacionArregloMutableTipo(t[3], t[12], TIPO_DATO.ID, t[8], t.slice[1].lineno, 1)
+
+def p_declaracion_arreglo_no_mutable(t):
+    '''
+        declarar_arreglo : LET ID IGUAL CORCHIZQ llamada_parametros CORCHDER PUNTOYCOMA
+    '''
+    t[0] = AsignacionArregloNoMutable(t[2], t[5], t.slice[1].lineno, 1)
+
+def p_declaracion_arreglo_no_mutable_tipo(t):
+    '''
+        declarar_arreglo : LET ID DOSPUNTOS CORCHIZQ tipo PUNTOYCOMA expresion CORCHDER IGUAL CORCHIZQ llamada_parametros CORCHDER PUNTOYCOMA
+    '''
+    if(t[5] == "i64"):
+        t[0] = AsignacionArregloNoMutableTipo(t[2], t[11], TIPO_DATO.I64, t[7], t.slice[1].lineno, 1)
+    elif(t[5] == "f64"):
+        t[0] = AsignacionArregloNoMutableTipo(t[2], t[11], TIPO_DATO.F64, t[7], t.slice[1].lineno, 1)
+    elif(t[5] == "bool"):
+        t[0] = AsignacionArregloNoMutableTipo(t[2], t[11], TIPO_DATO.BOOL, t[7], t.slice[1].lineno, 1)
+    elif(t[5] == "char"):
+        t[0] = AsignacionArregloNoMutableTipo(t[2], t[11], TIPO_DATO.CHAR, t[7], t.slice[1].lineno, 1)
+    elif(t[5] == "String"):
+        t[0] = AsignacionArregloNoMutableTipo(t[2], t[11], TIPO_DATO.STRING, t[7], t.slice[1].lineno, 1)
+    elif(t[5] == "str"):
+        t[0] = AsignacionArregloNoMutableTipo(t[2], t[11], TIPO_DATO.STR, t[7], t.slice[1].lineno, 1)
+    elif(t[5] == "usize"):
+        t[0] = AsignacionArregloNoMutableTipo(t[2], t[11], TIPO_DATO.USIZE, t[7], t.slice[1].lineno, 1)
+    else:
+        t[0] = AsignacionArregloNoMutableTipo(t[2], t[11], TIPO_DATO.ID, t[7], t.slice[1].lineno, 1)
 
 def p_lista_llamada_parametros(t):
     '''

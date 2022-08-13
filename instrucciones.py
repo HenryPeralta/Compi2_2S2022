@@ -82,6 +82,22 @@ class AsignacionArregloMutableTipo(Instruccion):
         self.linea = linea
         self.columna = columna
 
+class AsignacionArregloNoMutable(Instruccion):
+    def __init__(self, id, listaexp, linea, columna):
+        self.id = id
+        self.listaexp = listaexp
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionArregloNoMutableTipo(Instruccion):
+    def __init__(self, id, listaexp, tipo, tamanio, linea, columna):
+        self.id = id
+        self.listaexp = listaexp
+        self.tipo = tipo
+        self.tamanio = tamanio
+        self.linea = linea
+        self.columna = columna
+
 class CicloWhile(Instruccion):
     def __init__(self, exp, linea, columna, instrucciones = []):
         self.exp = exp
@@ -97,3 +113,13 @@ class CicloFor(Instruccion):
         self.instrucciones = instrucciones
         self.linea = linea
         self.columna = columna
+
+class ExisteBreak(Instruccion):
+    ""
+
+class ExisteContinue(Instruccion):
+    ""
+
+class InstruccionReturn(Instruccion):
+    def __init__(self, exp):
+        self.exp = exp
