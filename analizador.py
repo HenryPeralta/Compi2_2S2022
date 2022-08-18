@@ -804,6 +804,106 @@ def instruccion_asignacion_arreglo_no_mutable_tipo(instruccion, ts, ambito):
         e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
         TABE.agregarError(e)
 
+def instruccion_asignacion_nuevo_arreglo(instruccion, ts, ambito):
+    global mensaje
+    existeVar = ts.existeVariable(instruccion.id)
+    if(existeVar):
+        variable = ts.obtener(instruccion.id)
+        variableN = variable
+        posiciona = resolver_general(instruccion.posicion, ts, ambito)
+        if(isinstance(posiciona, int)):
+            if(variable.mutable == True):
+                tamanio = len(variableN.valor)
+                valornuevo = resolver_general(instruccion.valor, ts, ambito)
+                if(posiciona >= tamanio):
+                    mensajeE = "Error semantico: el rango es mayor que el tamanio del arreglo \n"
+                    mensaje += mensajeE
+                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                    TABE.agregarError(e)
+                else:
+                    for valorarreglo in range(tamanio):
+                        if(posiciona == valorarreglo):
+                            variableN.valor[valorarreglo] = valornuevo
+                    ts.actualizarValor(variable, variableN.valor)
+            else:
+                mensajeE = "Error semantico: el arreglo no es mutable \n"
+                mensaje += mensajeE
+                e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                TABE.agregarError(e)
+        else:
+            mensajeE = "Error semantico: la posicion del arreglo no es un entero \n"
+            mensaje += mensajeE
+            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+            TABE.agregarError(e)
+    else:
+        mensajeE = "Error semantico: la variable no ha sido declarada \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_asignacion_vector_mutable(instruccion, ts, ambito):
+    global mensaje
+    listaValor = []
+    bandera_i64 = False
+    bandera_f64 = False
+    bandera_bool = False
+    bandera_char = False
+    bandera_string = False
+    for n in instruccion.listaexp:
+        listaValor.append(resolver_general(n, ts, ambito))
+    for valor in listaValor:
+        if(isinstance(valor, bool)):
+            bandera_bool = True
+        elif(isinstance(valor, int)):
+            bandera_i64 = True
+        elif(isinstance(valor, float)):
+            bandera_f64 = True
+        elif(isinstance(valor, str)):
+            if(len(valor) == 1):
+                bandera_char = True
+            else:
+                bandera_string = True
+    if(bandera_i64 == True and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == True and bandera_bool == False and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == True and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == True and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == True):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    else:
+        mensajeE = "Error semantico: los valores del vector no son del mismo tipo \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
 def procesar_instrucciones(instrucciones, ts, ambito):
     global mensaje
     global existeBreak
@@ -837,6 +937,10 @@ def procesar_instrucciones(instrucciones, ts, ambito):
             instruccion_asignacion_arreglo_no_mutable(instruccion, ts, ambito)
         elif(isinstance(instruccion, AsignacionArregloNoMutableTipo)):
             instruccion_asignacion_arreglo_no_mutable_tipo(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionNuevoArreglo)):
+            instruccion_asignacion_nuevo_arreglo(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionVectorMutable)):
+            instruccion_asignacion_vector_mutable(instruccion, ts, ambito)
         elif(isinstance(instruccion, IF)):
             instruccion_if(instruccion, ts, ambito)
         elif(isinstance(instruccion, IfElseIf)):

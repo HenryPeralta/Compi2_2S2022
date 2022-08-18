@@ -10,7 +10,8 @@ class TIPO_DATO(Enum):
     USIZE = 7
     ARREGLO = 8
     ID = 9
-    #falta -> Vectores y Structs
+    VEC = 10
+    #falta -> Structs
 
 class Simbolo():
     def __init__(self, id, tipo, valor, mutable, ambito, linea, columna):

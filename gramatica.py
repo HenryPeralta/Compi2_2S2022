@@ -242,6 +242,8 @@ def p_instruccion(t):
                     | ciclo_while
                     | ciclo_for
                     | declarar_arreglo
+                    | asignacion_arreglo
+                    | declarar_vector
                     | sen_transferencia
                     | return
     '''
@@ -406,6 +408,31 @@ def p_return(t):
     '''
     t[0] = InstruccionReturn(t[2])
 
+#def p_funcion(t):
+#    '''
+#        funcion : FN ID PARENTIZQ lista_parametros PARENTDER LLAVEIZQ instrucciones LLAVEDER
+#                | FN ID PARENTIZQ PARENTDER LLAVEIZQ instrucciones LLAVEDER
+#    '''
+#    if(t[4] == ")"):
+#        t[0] = Funcion(t[2], [], t[6], t.slice[1].lineno, 1)
+#    else:
+#        t[0] = Funcion(t[2], t[4], t[7], t.slice[1].lineno, 1)
+
+#def p_lista_parametros(t):
+#    '''
+#        lista_parametros : lista_parametros COMA parametro
+#    '''
+
+#def p_parametros(t):
+#    '''
+#        lista_parametros : parametro
+#    '''
+
+#def p_parametro_sin_tipo(t):
+#    '''
+#        parametro : ID
+#    '''
+
 def p_sentencia_if(t):
     '''
        sentencia_if : IF expresion LLAVEIZQ instrucciones LLAVEDER
@@ -462,6 +489,17 @@ def p_sen_transferencia(t):
         t[0] = ExisteBreak()
     elif(t[1] == "continue"):
         t[0] = ExisteContinue()
+
+def p_declaracion_vector_mutable(t):
+    '''
+        declarar_vector : LET MUT ID IGUAL VEC EXCLAMACION CORCHIZQ llamada_parametros CORCHDER PUNTOYCOMA
+    '''
+    t[0] = AsignacionVectorMutable(t[3], t[8], t.slice[1].lineno, 1)
+
+def p_declaracion_vector_mutable_tipo(t):
+    '''
+        declarar_vector : LET MUT 
+    '''
 
 def p_declaracion_arreglo_mutable(t):
     '''
@@ -535,6 +573,12 @@ def p_valor_parametro(t):
         valor_parametro : expresion
     '''
     t[0] = t[1]
+
+def p_asignacion_arreglo_1x1(t):
+    '''
+        asignacion_arreglo : ID CORCHIZQ expresion CORCHDER IGUAL expresion PUNTOYCOMA
+    '''
+    t[0] = AsignacionNuevoArreglo(t[1], t[3], t[6], t.slice[1].lineno, 1)
 
 def p_expresion_numero(t):
     '''
