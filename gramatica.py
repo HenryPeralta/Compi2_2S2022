@@ -245,6 +245,8 @@ def p_instruccion(t):
                     | asignacion_arreglo
                     | declarar_vector
                     | sen_transferencia
+                    | funcion
+                    | llamada_funcion
                     | return
     '''
     t[0] = t[1]
@@ -408,30 +410,63 @@ def p_return(t):
     '''
     t[0] = InstruccionReturn(t[2])
 
-#def p_funcion(t):
-#    '''
-#        funcion : FN ID PARENTIZQ lista_parametros PARENTDER LLAVEIZQ instrucciones LLAVEDER
-#                | FN ID PARENTIZQ PARENTDER LLAVEIZQ instrucciones LLAVEDER
-#    '''
-#    if(t[4] == ")"):
-#        t[0] = Funcion(t[2], [], t[6], t.slice[1].lineno, 1)
-#    else:
-#        t[0] = Funcion(t[2], t[4], t[7], t.slice[1].lineno, 1)
+def p_funcion_sin_return(t):
+    '''
+        funcion : FN ID PARENTIZQ lista_parametros PARENTDER LLAVEIZQ instrucciones LLAVEDER
+                | FN ID PARENTIZQ PARENTDER LLAVEIZQ instrucciones LLAVEDER
+    '''
+    if(t[4] == ")"):
+        t[0] = Funcion(t[2], [], t[6], t.slice[1].lineno, 1)
+    else:
+        t[0] = Funcion(t[2], t[4], t[7], t.slice[1].lineno, 1)
 
-#def p_lista_parametros(t):
-#    '''
-#        lista_parametros : lista_parametros COMA parametro
-#    '''
+def p_lista_parametros(t):
+    '''
+        lista_parametros : lista_parametros COMA parametro
+    '''
+    t[1].append(t[3])
+    t[0] = t[1]
 
-#def p_parametros(t):
-#    '''
-#        lista_parametros : parametro
-#    '''
+def p_parametros(t):
+    '''
+        lista_parametros : parametro
+    '''
+    t[0] = [t[1]]
 
-#def p_parametro_sin_tipo(t):
-#    '''
-#        parametro : ID
-#    '''
+def p_parametro_tipo(t):
+    '''
+        parametro : ID DOSPUNTOS tipo
+    '''
+    t[0] = ExpresionParametro(t[1], t[3])
+
+def p_llamada_funcion(t):
+    '''
+        llamada_funcion : ID PARENTIZQ PARENTDER PUNTOYCOMA
+                        | ID PARENTIZQ llamada_parametros PARENTDER PUNTOYCOMA
+    '''
+    if(t[3] == ")"):
+        t[0] = LlamadaFuncion(t[1], [], t.slice[1].lineno, 1)
+    else:
+        t[0] = LlamadaFuncion(t[1], t[3], t.slice[1].lineno, 1)
+
+def p_lista_llamada_parametros(t):
+    '''
+        llamada_parametros : llamada_parametros COMA valor_parametro
+    '''
+    t[1].append(t[3])
+    t[0] = t[1]
+
+def p_llamada_parametros(t):
+    '''
+        llamada_parametros : valor_parametro
+    '''
+    t[0] = [t[1]]
+
+def p_valor_parametro(t):
+    '''
+        valor_parametro : expresion
+    '''
+    t[0] = t[1]
 
 def p_sentencia_if(t):
     '''
@@ -498,8 +533,51 @@ def p_declaracion_vector_mutable(t):
 
 def p_declaracion_vector_mutable_tipo(t):
     '''
-        declarar_vector : LET MUT 
+        declarar_vector : LET MUT ID DOSPUNTOS VEC MENOR tipo MAYOR IGUAL VEC EXCLAMACION CORCHIZQ llamada_parametros CORCHDER PUNTOYCOMA
     '''
+    if(t[7] == "i64"):
+        t[0] = AsignacionVectorMutableTipo(t[3], t[13], TIPO_DATO.I64, t.slice[1].lineno, 1)
+    elif(t[7] == "f64"):
+        t[0] = AsignacionVectorMutableTipo(t[3], t[13], TIPO_DATO.F64, t.slice[1].lineno, 1)
+    elif(t[7] == "bool"):
+        t[0] = AsignacionVectorMutableTipo(t[3], t[13], TIPO_DATO.BOOL, t.slice[1].lineno, 1)
+    elif(t[7] == "char"):
+        t[0] = AsignacionVectorMutableTipo(t[3], t[13], TIPO_DATO.CHAR, t.slice[1].lineno, 1)
+    elif(t[7] == "String"):
+        t[0] = AsignacionVectorMutableTipo(t[3], t[13], TIPO_DATO.STRING, t.slice[1].lineno, 1)
+    elif(t[7] == "str"):
+        t[0] = AsignacionVectorMutableTipo(t[3], t[13], TIPO_DATO.STR, t.slice[1].lineno, 1)
+    elif(t[7] == "usize"):
+        t[0] = AsignacionVectorMutableTipo(t[3], t[13], TIPO_DATO.USIZE, t.slice[1].lineno, 1)
+    else:
+        t[0] = AsignacionVectorMutableTipo(t[3], t[13], TIPO_DATO.ID, t.slice[1].lineno, 1)
+
+def p_declaracion_vector_no_mutable(t):
+    '''
+        declarar_vector : LET ID IGUAL VEC EXCLAMACION CORCHIZQ llamada_parametros CORCHDER PUNTOYCOMA
+    '''
+    t[0] = AsignacionVectorNoMutable(t[2], t[7], t.slice[1].lineno, 1)
+
+def p_declaracion_vector_no_mutable_tipo(t):
+    '''
+        declarar_vector : LET ID DOSPUNTOS VEC MENOR tipo MAYOR IGUAL VEC EXCLAMACION CORCHIZQ llamada_parametros CORCHDER PUNTOYCOMA
+    '''
+    if(t[6] == "i64"):
+        t[0] = AsignacionVectorNoMutableTipo(t[2], t[12], TIPO_DATO.I64, t.slice[1].lineno, 1)
+    elif(t[6] == "f64"):
+        t[0] = AsignacionVectorNoMutableTipo(t[2], t[12], TIPO_DATO.F64, t.slice[1].lineno, 1)
+    elif(t[6] == "bool"):
+        t[0] = AsignacionVectorNoMutableTipo(t[2], t[12], TIPO_DATO.BOOL, t.slice[1].lineno, 1)
+    elif(t[6] == "char"):
+        t[0] = AsignacionVectorNoMutableTipo(t[2], t[12], TIPO_DATO.CHAR, t.slice[1].lineno, 1)
+    elif(t[6] == "String"):
+        t[0] = AsignacionVectorNoMutableTipo(t[2], t[12], TIPO_DATO.STRING, t.slice[1].lineno, 1)
+    elif(t[6] == "str"):
+        t[0] = AsignacionVectorNoMutableTipo(t[2], t[12], TIPO_DATO.STR, t.slice[1].lineno, 1)
+    elif(t[6] == "usize"):
+        t[0] = AsignacionVectorNoMutableTipo(t[2], t[12], TIPO_DATO.USIZE, t.slice[1].lineno, 1)
+    else:
+        t[0] = AsignacionVectorNoMutableTipo(t[2], t[12], TIPO_DATO.ID, t.slice[1].lineno, 1)
 
 def p_declaracion_arreglo_mutable(t):
     '''

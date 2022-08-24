@@ -90,3 +90,8 @@ class ExpresionFnLen():
     def __init__(self, exp, tipo):
         self.exp = exp
         self.tipo = tipo
+
+class ExpresionParametro():
+    def __init__(self, id, tipo):
+        self.id = id
+        self.tipo = tipo

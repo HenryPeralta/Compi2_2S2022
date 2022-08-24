@@ -42,10 +42,11 @@ class Struct():
 
 class TablaSimbolos():
     #simbolo
-    def __init__(self, simbolos = {}, funcion = {}, structs = {}):
+    def __init__(self, simbolos = {}, funcion = {}, structs = {}, simbolos_funciones = {}):
         self.simbolos = simbolos
         self.funcion = funcion
         self.structs = structs
+        self.simbolos_funciones = simbolos_funciones
 
     def agregar(self, simbolo):
         self.simbolos[simbolo.id] = simbolo
@@ -76,6 +77,31 @@ class TablaSimbolos():
     def actualizarValor(self, simbolo, exp):
         self.simbolos[simbolo.id].valor = exp
 
+    #funcion
+    def agregar_funcion(self, fuction):
+        self.funcion[fuction.id] = fuction
+
+    def obtener_funcion(self, id):
+        if not id in self.funcion:
+            return 'Error variable ', id, ' no definida'
+        else:
+            return self.funcion[id]
+
+    def comprobar_funcion(self, fuction):
+        if not fuction.id in self.funcion:
+            return False
+        return True
+
+    def actualizar_funcion(self, fuction):
+        if not fuction.id in self.funcion:
+            print('Error: variable ', fuction.id, ' no definida')
+            return -1
+        else:
+            self.funcion[fuction.id] = fuction
+
+    def agregar_simbolos_funciones(self, nuevos_simbolos_funciones):
+        self.simbolos_funciones[nuevos_simbolos_funciones.id] = nuevos_simbolos_funciones
+        
     def GenerarTablaSimbolos(self):
         file = open ("./reportes/tabsimbolos.html", "w")
         file.write("<!DOCTYPE html>\n<html>\n")
@@ -258,9 +284,49 @@ class TablaSimbolos():
             file.write("<tr>")
             contador += 1
 
+        for n in self.funcion:
+            lista = ""
+            if(len(self.funcion[n].listaparametros) != 0): 
+                for i in self.funcion[n].listaparametros:
+                    lista += i.tipo + ", "
+            listaMayuscula = lista.upper()
+            file.write("<tr>")
+            file.write("<td>"+str(contador)+"</td>")
+            file.write("<td>"+self.funcion[n].id+"</td>")
+            file.write("<td>"+"Funcion"+"</td>")
+            file.write("<td>"+str(listaMayuscula)+"</td>")
+            file.write("<td>"+str(self.funcion[n].ambito)+"</td>")
+            file.write("<td>"+str(self.funcion[n].linea)+"</td>")
+            file.write("<td>"+str(self.funcion[n].columna)+"</td>")
+            file.write("<tr>")
+            contador += 1
+
+        if(len(self.simbolos_funciones) != 0):
+            for n in self.simbolos_funciones:
+                if(str(self.simbolos_funciones[n].ambito) != "Global"):
+                    deftipo = str(self.simbolos_funciones[n].tipo)
+                    tipoval = deftipo.split(".")
+                    valor = "Variable"
+                    if(type(self.simbolos_funciones[n].valor) == list):
+                        valor = "Arreglo"
+                    elif(type(self.simbolos_funciones[n].valor) == dict):
+                        valor = "Struct"
+                    file.write("<tr>")
+                    file.write("<td>"+str(contador)+"</td>")
+                    file.write("<td>"+self.simbolos_funciones[n].id+"</td>")
+                    file.write("<td>"+valor+"</td>")
+                    file.write("<td>"+tipoval[1]+"</td>")
+                    file.write("<td>"+str(self.simbolos_funciones[n].ambito)+"</td>")
+                    file.write("<td>"+str(self.simbolos_funciones[n].linea)+"</td>")
+                    file.write("<td>"+str(self.simbolos_funciones[n].columna)+"</td>")
+                    file.write("<tr>")
+                    contador += 1
+        else:
+            print("La lista esta vacia")
         file.close()
 
     def reiniciar(self):
         self.simbolos.clear()
         self.funcion.clear()
         self.structs.clear()
+        self.simbolos_funciones.clear()

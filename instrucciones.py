@@ -140,9 +140,39 @@ class Funcion(Instruccion):
         self.linea = linea
         self.columna = columna
 
+class LlamadaFuncion(Instruccion):
+    def __init__(self, id, listaparametro, linea, columna):
+        self.id = id
+        self.listaparametro = listaparametro
+        self.linea = linea
+        self.columna = columna
+
 class AsignacionVectorMutable(Instruccion):
     def __init__(self, id, listaexp, linea, columna):
         self.id = id
         self.listaexp = listaexp
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionVectorMutableTipo(Instruccion):
+    def __init__(self, id, listaexp, tipo, linea, columna):
+        self.id = id
+        self.listaexp = listaexp
+        self.tipo = tipo
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionVectorNoMutable(Instruccion):
+    def __init__(self, id, listaexp, linea, columna):
+        self.id = id
+        self.listaexp = listaexp
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionVectorNoMutableTipo(Instruccion):
+    def __init__(self, id, listaexp, tipo, linea, columna):
+        self.id = id
+        self.listaexp = listaexp
+        self.tipo = tipo
         self.linea = linea
         self.columna = columna
