@@ -244,6 +244,9 @@ def p_instruccion(t):
                     | declarar_arreglo
                     | asignacion_arreglo
                     | declarar_vector
+                    | nativa_push
+                    | nativa_insert
+                    | nativa_remove
                     | sen_transferencia
                     | funcion
                     | llamada_funcion
@@ -321,8 +324,12 @@ def p_expresion_parentesis(t):
 def p_fn_nativas_vectores(t):
     '''
         expresion : expresion PUNTO LEN PARENTIZQ PARENTDER
+                  | expresion PUNTO CONTAINS PARENTIZQ AMPERSAND expresion PARENTDER
     '''
-    t[0] = ExpresionFnLen(t[1], FUNCIONES_NATIVAS_VECTORES.LEN)
+    if(t[3] == "len"):
+        t[0] = ExpresionFnLen(t[1], FUNCIONES_NATIVAS_VECTORES.LEN)
+    else:
+        t[0] = Contains(t[1], t[6])
 
 def p_impresion(t):
     '''
@@ -468,6 +475,52 @@ def p_valor_parametro(t):
     '''
     t[0] = t[1]
 
+def p_llamada_funcion2(t):
+    '''
+        expresion : ID PARENTIZQ PARENTDER 
+                  | ID PARENTIZQ llamada_parametros PARENTDER
+    '''
+    if(t[3] == ")"):
+        t[0] = LlamadaFuncion(t[1], [], t.slice[1].lineno, 1)
+    else:
+        t[0] = LlamadaFuncion(t[1], t[3], t.slice[1].lineno, 1)
+
+def p_funcion_con_return(t):
+    '''
+        funcion : FN ID PARENTIZQ lista_parametros PARENTDER MENOS MAYOR tipo LLAVEIZQ instrucciones LLAVEDER
+                | FN ID PARENTIZQ PARENTDER MENOS MAYOR tipo LLAVEIZQ instrucciones LLAVEDER
+    '''
+    if(t[4] == ")"):
+        if(t[7] == "i64"):
+            t[0] = FuncionTipo(t[2], [], TIPO_DATO.I64, t[9], t.slice[1].lineno, 1)
+        elif(t[7] == "f64"):
+            t[0] = FuncionTipo(t[2], [], TIPO_DATO.F64, t[9], t.slice[1].lineno, 1)
+        elif(t[7] == "bool"):
+            t[0] = FuncionTipo(t[2], [], TIPO_DATO.BOOL, t[9], t.slice[1].lineno, 1)
+        elif(t[7] == "char"):
+            t[0] = FuncionTipo(t[2], [], TIPO_DATO.CHAR, t[9], t.slice[1].lineno, 1)
+        elif(t[7] == "String"):
+            t[0] = FuncionTipo(t[2], [], TIPO_DATO.STRING, t[9], t.slice[1].lineno, 1)
+        elif(t[7] == "str"):
+            t[0] = FuncionTipo(t[2], [], TIPO_DATO.STR, t[9], t.slice[1].lineno, 1)
+        elif(t[7] == "usize"):
+            t[0] = FuncionTipo(t[2], [], TIPO_DATO.USIZE, t[9], t.slice[1].lineno, 1)
+    else:
+        if(t[8] == "i64"):
+            t[0] = FuncionTipo(t[2], t[4], TIPO_DATO.I64, t[10], t.slice[1].lineno, 1)
+        elif(t[8] == "f64"):
+            t[0] = FuncionTipo(t[2], t[4], TIPO_DATO.F64, t[10], t.slice[1].lineno, 1)
+        elif(t[8] == "bool"):
+            t[0] = FuncionTipo(t[2], t[4], TIPO_DATO.BOOL, t[10], t.slice[1].lineno, 1)
+        elif(t[8] == "char"):
+            t[0] = FuncionTipo(t[2], t[4], TIPO_DATO.CHAR, t[10], t.slice[1].lineno, 1)
+        elif(t[8] == "String"):
+            t[0] = FuncionTipo(t[2], t[4], TIPO_DATO.STRING, t[10], t.slice[1].lineno, 1)
+        elif(t[8] == "str"):
+            t[0] = FuncionTipo(t[2], t[4], TIPO_DATO.STR, t[10], t.slice[1].lineno, 1)
+        elif(t[8] == "usize"):
+            t[0] = FuncionTipo(t[2], t[4], TIPO_DATO.USIZE, t[10], t.slice[1].lineno, 1)
+
 def p_sentencia_if(t):
     '''
        sentencia_if : IF expresion LLAVEIZQ instrucciones LLAVEDER
@@ -578,6 +631,68 @@ def p_declaracion_vector_no_mutable_tipo(t):
         t[0] = AsignacionVectorNoMutableTipo(t[2], t[12], TIPO_DATO.USIZE, t.slice[1].lineno, 1)
     else:
         t[0] = AsignacionVectorNoMutableTipo(t[2], t[12], TIPO_DATO.ID, t.slice[1].lineno, 1)
+
+def p_declaracion_vector_vacio_mutable(t):
+    '''
+        declarar_vector : LET MUT ID DOSPUNTOS VEC MENOR tipo MAYOR IGUAL VEC DOSPUNTOS DOSPUNTOS NEW PARENTIZQ PARENTDER PUNTOYCOMA
+    '''
+    if(t[7] == "i64"):
+        t[0] = AsignacionVectorVacioMutable(t[3], TIPO_DATO.I64, t.slice[1].lineno, 1)
+    elif(t[7] == "f64"):
+        t[0] = AsignacionVectorVacioMutable(t[3], TIPO_DATO.F64, t.slice[1].lineno, 1)
+    elif(t[7] == "bool"):
+        t[0] = AsignacionVectorVacioMutable(t[3], TIPO_DATO.BOOL, t.slice[1].lineno, 1)
+    elif(t[7] == "char"):
+        t[0] = AsignacionVectorVacioMutable(t[3], TIPO_DATO.CHAR, t.slice[1].lineno, 1)
+    elif(t[7] == "String"):
+        t[0] = AsignacionVectorVacioMutable(t[3], TIPO_DATO.STRING, t.slice[1].lineno, 1)
+    elif(t[7] == "str"):
+        t[0] = AsignacionVectorVacioMutable(t[3], TIPO_DATO.STR, t.slice[1].lineno, 1)
+    elif(t[7] == "usize"):
+        t[0] = AsignacionVectorVacioMutable(t[3], TIPO_DATO.USIZE, t.slice[1].lineno, 1)
+
+def p_declaracion_vector_vacio_no_mutable(t):
+    '''
+        declarar_vector : LET ID DOSPUNTOS VEC MENOR tipo MAYOR IGUAL VEC DOSPUNTOS DOSPUNTOS NEW PARENTIZQ PARENTDER PUNTOYCOMA
+    '''
+    if(t[6] == "i64"):
+        t[0] = AsignacionVectorVacioNoMutable(t[2], TIPO_DATO.I64, t.slice[1].lineno, 1)
+    elif(t[6] == "f64"):
+        t[0] = AsignacionVectorVacioNoMutable(t[2], TIPO_DATO.F64, t.slice[1].lineno, 1)
+    elif(t[6] == "bool"):
+        t[0] = AsignacionVectorVacioNoMutable(t[2], TIPO_DATO.BOOL, t.slice[1].lineno, 1)
+    elif(t[6] == "char"):
+        t[0] = AsignacionVectorVacioNoMutable(t[2], TIPO_DATO.CHAR, t.slice[1].lineno, 1)
+    elif(t[6] == "String"):
+        t[0] = AsignacionVectorVacioNoMutable(t[2], TIPO_DATO.STRING, t.slice[1].lineno, 1)
+    elif(t[6] == "str"):
+        t[0] = AsignacionVectorVacioNoMutable(t[2], TIPO_DATO.STR, t.slice[1].lineno, 1)
+    elif(t[6] == "usize"):
+        t[0] = AsignacionVectorVacioNoMutable(t[2], TIPO_DATO.USIZE, t.slice[1].lineno, 1)
+
+def p_fnativa_push(t):
+    '''
+        nativa_push : ID PUNTO PUSH PARENTIZQ expresion PARENTDER PUNTOYCOMA
+    '''
+    t[0] = Push(t[1], t[5], t.slice[1].lineno, 1)
+
+def p_fnativa_insert(t):
+    '''
+        nativa_insert : ID PUNTO INSERT PARENTIZQ expresion COMA expresion PARENTDER PUNTOYCOMA
+    '''
+    t[0] = Insert(t[1], t[5], t[7], t.slice[1].lineno, 1)
+
+def p_fnativa_remove(t):
+    '''
+        nativa_remove : ID PUNTO REMOVE PARENTIZQ expresion PARENTDER PUNTOYCOMA
+    '''
+    t[0] = Remove(t[1], t[5], t.slice[1].lineno, 1)
+
+#def pfnativa_contains(t):
+#    '''
+#        expresion : ID PUNTO CONTAINS PARENTIZQ AMPERSAND expresion PARENTDER
+#    '''
+#    t[0] = Contains(t[1], t[6], t.slice[1].lineno, 1)
 
 def p_declaracion_arreglo_mutable(t):
     '''

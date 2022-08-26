@@ -24,9 +24,10 @@ class Simbolo():
         self.columna = columna
 
 class Funcion():
-    def __init__(self, id, listaparametros, instruccion, ambito, linea, columna):
+    def __init__(self, id, listaparametros, tipo, instruccion, ambito, linea, columna):
         self.id = id
         self.listaparametros = listaparametros
+        self.tipo = tipo
         self.instruccion = instruccion
         self.ambito = ambito
         self.linea = linea

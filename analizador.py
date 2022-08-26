@@ -30,7 +30,7 @@ def resolver_general(exp, ts, ambito):
         exp = resolver_general(exp.exp, ts, ambito)
         return exp*-1
     elif(isinstance(exp, ExpresionIdentificador)):
-        simbolo = TABS .Simbolo(exp.id, "", "", False, "",0,0)
+        simbolo = TABS.Simbolo(exp.id, "", "", False, "",0,0)
         comprobar = ts.comprobar(simbolo)
         if(comprobar):
             return ts.obtener(exp.id).valor
@@ -62,6 +62,8 @@ def resolver_general(exp, ts, ambito):
         return (resolver_len(exp, ts, ambito))
     elif(isinstance(exp, LlamadaFuncion)):
         return instruccion_llamada_funcion(exp, ts, ambito)
+    elif(isinstance(exp, Contains)):
+        return instruccion_contains(exp, ts, ambito)
 
 def resolver_len(expresion, ts, ambito):
     global mensaje
@@ -1155,9 +1157,98 @@ def instruccion_asignacion_vector_no_mutable_tipo(instruccion, ts, ambito):
         e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
         TABE.agregarError(e)
 
+def instruccion_asignacion_vector_vacio_mutable(instruccion, ts, ambito):
+    global mensaje
+    listaValor = []
+    print("Estoy en el metodo")
+    if(TABS.TIPO_DATO.I64 == instruccion.tipo):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(TABS.TIPO_DATO.F64 == instruccion.tipo):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(TABS.TIPO_DATO.BOOL == instruccion.tipo):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(TABS.TIPO_DATO.CHAR == instruccion.tipo):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(TABS.TIPO_DATO.STRING == instruccion.tipo):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    else:
+        mensajeE = "Error semantico: el tipo no es correcto \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_asignacion_vector_vacio_no_mutable(instruccion, ts, ambito):
+    global mensaje
+    listaValor = []
+    print("Estoy en el metodo")
+    if(TABS.TIPO_DATO.I64 == instruccion.tipo):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(TABS.TIPO_DATO.F64 == instruccion.tipo):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(TABS.TIPO_DATO.BOOL == instruccion.tipo):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(TABS.TIPO_DATO.CHAR == instruccion.tipo):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(TABS.TIPO_DATO.STRING == instruccion.tipo):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.VEC, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    else:
+        mensajeE = "Error semantico: el tipo no es correcto \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
 def instruccion_funcion(funcion, ts, ambito):
-    fuction = TABS.Funcion(funcion.id, funcion.listaparametro, funcion.instrucciones, ambito, funcion.linea, funcion.columna)
-    print(fuction)
+    fuction = TABS.Funcion(funcion.id, funcion.listaparametro, "", funcion.instrucciones, ambito, funcion.linea, funcion.columna)
     comprobar = ts.comprobar_funcion(fuction)
     if(comprobar):
         ts.actualizar_funcion(fuction)
@@ -1169,7 +1260,7 @@ def instruccion_funcion(funcion, ts, ambito):
 def instruccion_llamada_funcion(funcion, ts, ambito):
     global existeReturn
     global mensaje
-    aux = TABS.Funcion(funcion.id, "", "", "", 0, 0)
+    aux = TABS.Funcion(funcion.id, "","", "", "", 0, 0)
     comprobar = ts.comprobar_funcion(aux)
     if(comprobar):
         llamada = ts.obtener_funcion(funcion.id)
@@ -1191,8 +1282,56 @@ def instruccion_llamada_funcion(funcion, ts, ambito):
                 for i in nuevoTS.simbolos:
                     ts.agregar_simbolos_funciones(nuevoTS.simbolos[i])
                 if(existeReturn):
-                    existeReturn = False
-                    return valorReturn
+                    if(llamada.tipo == ""):
+                        existeReturn = False
+                        return valorReturn
+                    else:
+                        if(isinstance(valorReturn, bool)):
+                            if(TABS.TIPO_DATO.BOOL == llamada.tipo):
+                                existeReturn = False
+                                return valorReturn
+                            else:
+                                mensajeE = "Error semantico: valor de retorno no valido \n"
+                                mensaje += mensajeE
+                                e = TABE.Error(mensajeE, ambito, funcion.linea, funcion.columna, datetime.now())
+                                TABE.agregarError(e)
+                        elif(isinstance(valorReturn, int)):
+                            if(TABS.TIPO_DATO.I64 == llamada.tipo):
+                                existeReturn = False
+                                return valorReturn
+                            else:
+                                mensajeE = "Error semantico: valor de retorno no valido \n"
+                                mensaje += mensajeE
+                                e = TABE.Error(mensajeE, ambito, funcion.linea, funcion.columna, datetime.now())
+                                TABE.agregarError(e)
+                        elif(isinstance(valorReturn, float)):
+                            if(TABS.TIPO_DATO.F64 == llamada.tipo):
+                                existeReturn = False
+                                return valorReturn
+                            else:
+                                mensajeE = "Error semantico: valor de retorno no valido \n"
+                                mensaje += mensajeE
+                                e = TABE.Error(mensajeE, ambito, funcion.linea, funcion.columna, datetime.now())
+                                TABE.agregarError(e)
+                        elif(isinstance(valorReturn, str)):
+                            if(len(valorReturn) == 1):
+                                if(TABS.TIPO_DATO.CHAR == llamada.tipo):
+                                    existeReturn = False
+                                    return valorReturn
+                                else:
+                                    mensajeE = "Error semantico: valor de retorno no valido \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, funcion.linea, funcion.columna, datetime.now())
+                                    TABE.agregarError(e)
+                            else:
+                                if(TABS.TIPO_DATO.STRING == llamada.tipo):
+                                    existeReturn = False
+                                    return valorReturn
+                                else:
+                                    mensajeE = "Error semantico: valor de retorno no valido \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, funcion.linea, funcion.columna, datetime.now())
+                                    TABE.agregarError(e)
             else:
                 x = 0
                 for n in llamada.listaparametros:
@@ -1204,15 +1343,133 @@ def instruccion_llamada_funcion(funcion, ts, ambito):
                 for i in nuevoTS.simbolos:
                     ts.agregar_simbolos_funciones(nuevoTS.simbolos[i])
                 if(existeReturn):
-                    existeReturn = False
-                    return valorReturn
+                    if(llamada.tipo == ""):
+                        existeReturn = False
+                        return valorReturn
+                    else:
+                        if(isinstance(valorReturn, bool)):
+                            if(TABS.TIPO_DATO.BOOL == llamada.tipo):
+                                existeReturn = False
+                                return valorReturn
+                            else:
+                                mensajeE = "Error semantico: valor de retorno no valido \n"
+                                mensaje += mensajeE
+                                e = TABE.Error(mensajeE, ambito, funcion.linea, funcion.columna, datetime.now())
+                                TABE.agregarError(e)
+                        elif(isinstance(valorReturn, int)):
+                            if(TABS.TIPO_DATO.I64 == llamada.tipo):
+                                existeReturn = False
+                                return valorReturn
+                            else:
+                                mensajeE = "Error semantico: valor de retorno no valido \n"
+                                mensaje += mensajeE
+                                e = TABE.Error(mensajeE, ambito, funcion.linea, funcion.columna, datetime.now())
+                                TABE.agregarError(e)
+                        elif(isinstance(valorReturn, float)):
+                            if(TABS.TIPO_DATO.F64 == llamada.tipo):
+                                existeReturn = False
+                                return valorReturn
+                            else:
+                                mensajeE = "Error semantico: valor de retorno no valido \n"
+                                mensaje += mensajeE
+                                e = TABE.Error(mensajeE, ambito, funcion.linea, funcion.columna, datetime.now())
+                                TABE.agregarError(e)
+                        elif(isinstance(valorReturn, str)):
+                            if(len(valorReturn) == 1):
+                                if(TABS.TIPO_DATO.CHAR == llamada.tipo):
+                                    existeReturn = False
+                                    return valorReturn
+                                else:
+                                    mensajeE = "Error semantico: valor de retorno no valido \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, funcion.linea, funcion.columna, datetime.now())
+                                    TABE.agregarError(e)
+                            else:
+                                if(TABS.TIPO_DATO.STRING == llamada.tipo):
+                                    existeReturn = False
+                                    return valorReturn
+                                else:
+                                    mensajeE = "Error semantico: valor de retorno no valido \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, funcion.linea, funcion.columna, datetime.now())
+                                    TABE.agregarError(e)
         else:
-            mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+            mensajeE = "Error semantico: la cantidad no coincide con los parametros del arreglo \n"
             mensaje += mensajeE
             e = TABE.Error(mensajeE, ambito, funcion.linea, funcion.columna, datetime.now())
             TABE.agregarError(e)
     else:
         print("Aqui va la parte de los structs")
+
+def instruccion_funcion_tipo(funcion, ts, ambito):
+    print(funcion.tipo)
+    fuction = TABS.Funcion(funcion.id, funcion.listaparametro, funcion.tipo, funcion.instrucciones, ambito, funcion.linea, funcion.columna)
+    print(fuction)
+    comprobar = ts.comprobar_funcion(fuction)
+    if(comprobar):
+        ts.actualizar_funcion(fuction)
+        print("Se actualizo la funcion")
+    else:
+        ts.agregar_funcion(fuction)
+        print("Se agrego la funcion")
+
+def instruccion_push(exp, ts, ambito):
+    global mensaje
+    simbolo = TABS.Simbolo(exp.id, "", "", "", "", 0, 0)
+    comprobar = ts.comprobar(simbolo)
+    if(comprobar):
+        expresion = resolver_general(exp.exp, ts, ambito)
+        lista = ts.obtener(exp.id).valor
+        lista.append(expresion)
+    else:
+        mensajeE = "Error semantico: la variable es incorrecta \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, exp.linea, exp.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_insert(exp, ts, ambito):
+    global mensaje
+    simbolo = TABS.Simbolo(exp.id, "", "", "", "", 0, 0)
+    comprobar = ts.comprobar(simbolo)
+    if(comprobar):
+        expresion = resolver_general(exp.exp, ts, ambito)
+        posicion = resolver_general(exp.pos, ts, ambito)
+        lista = ts.obtener(exp.id).valor
+        lista.insert(posicion, expresion)
+    else:
+        mensajeE = "Error semantico: la variable es incorrecta \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, exp.linea, exp.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_remove(exp, ts, ambito):
+    global mensaje
+    simbolo = TABS.Simbolo(exp.id, "", "", "", "", 0, 0)
+    comprobar = ts.comprobar(simbolo)
+    if(comprobar):
+        posicion = resolver_general(exp.pos, ts, ambito)
+        lista = ts.obtener(exp.id).valor
+        del lista[posicion]
+    else:
+        mensajeE = "Error semantico: la variable es incorrecta \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, exp.linea, exp.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_contains(exp, ts, ambito):
+    global mensaje
+    valores = resolver_general(exp.id, ts, ambito)
+    if(valores == None):
+        mensajeE = "Error semantico: la variable no contine ningun valor o no existe \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, 1, 1, datetime.now())
+        TABE.agregarError(e)
+    else:
+        expresion = resolver_general(exp.exp, ts, ambito)
+        if(expresion in valores):
+            return True
+        else:
+            return False  
 
 def procesar_instrucciones(instrucciones, ts, ambito):
     global mensaje
@@ -1257,8 +1514,14 @@ def procesar_instrucciones(instrucciones, ts, ambito):
             instruccion_asignacion_vector_no_mutable(instruccion, ts, ambito)
         elif(isinstance(instruccion, AsignacionVectorNoMutableTipo)):
             instruccion_asignacion_vector_no_mutable_tipo(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionVectorVacioMutable)):
+            instruccion_asignacion_vector_vacio_mutable(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionVectorVacioNoMutable)):
+            instruccion_asignacion_vector_vacio_no_mutable(instruccion, ts, ambito)
         elif(isinstance(instruccion, Funcion)):
             instruccion_funcion(instruccion, ts, ambito)
+        elif(isinstance(instruccion, FuncionTipo)):
+            instruccion_funcion_tipo(instruccion, ts, ambito)
         elif(isinstance(instruccion, LlamadaFuncion)):
             instruccion_llamada_funcion(instruccion, ts, ambito)
         elif(isinstance(instruccion, IF)):
@@ -1271,6 +1534,12 @@ def procesar_instrucciones(instrucciones, ts, ambito):
             instruccion_while(instruccion, ts, ambito)
         elif(isinstance(instruccion, CicloFor)):
             instruccion_for(instruccion, ts, ambito)
+        elif(isinstance(instruccion, Push)):
+            instruccion_push(instruccion, ts, ambito)
+        elif(isinstance(instruccion, Insert)):
+            instruccion_insert(instruccion, ts, ambito)
+        elif(isinstance(instruccion, Remove)):
+            instruccion_remove(instruccion, ts, ambito)
         elif(isinstance(instruccion, ExisteBreak)):
             existeBreak = True
         elif(isinstance(instruccion, ExisteContinue)):

@@ -140,6 +140,15 @@ class Funcion(Instruccion):
         self.linea = linea
         self.columna = columna
 
+class FuncionTipo(Instruccion):
+    def __init__(self, id, listaparametro, tipo, instrucciones, linea, columna):
+        self.id = id
+        self.listaparametro = listaparametro
+        self.tipo = tipo
+        self.instrucciones = instrucciones
+        self.linea = linea
+        self.columna = columna
+
 class LlamadaFuncion(Instruccion):
     def __init__(self, id, listaparametro, linea, columna):
         self.id = id
@@ -176,3 +185,44 @@ class AsignacionVectorNoMutableTipo(Instruccion):
         self.tipo = tipo
         self.linea = linea
         self.columna = columna
+
+class AsignacionVectorVacioMutable(Instruccion):
+    def __init__(self, id, tipo, linea, columna):
+        self.id = id
+        self.tipo = tipo
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionVectorVacioNoMutable(Instruccion):
+    def __init__(self, id, tipo, linea, columna):
+        self.id = id
+        self.tipo = tipo
+        self.linea = linea
+        self.columna = columna
+
+class Push(Instruccion):
+    def __init__(self, id, exp, linea, columna):
+        self.id = id
+        self.exp = exp
+        self.linea = linea
+        self.columna = columna
+
+class Insert(Instruccion):
+    def __init__(self, id, pos, exp, linea, columna):
+        self.id = id
+        self.pos = pos
+        self.exp = exp
+        self.linea = linea
+        self.columna = columna
+
+class Remove(Instruccion):
+    def __init__(self, id, pos, linea, columna):
+        self.id = id
+        self.pos = pos
+        self.linea = linea
+        self.columna = columna
+
+class Contains(Instruccion):
+    def __init__(self, id, exp):
+        self.id = id
+        self.exp = exp
