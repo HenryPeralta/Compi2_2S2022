@@ -10,6 +10,18 @@ class Println(Instruccion):
     def __init__(self, exp):
         self.exp = exp
 
+class PrintEsp(Instruccion):
+    def __init__(self, linea, columna, lista=[]):
+        self.linea = linea
+        self.columna = columna
+        self.lista = lista
+
+class PrintlnEsp(Instruccion):
+    def __init__(self, linea, columna, lista=[]):
+        self.linea = linea
+        self.columna = columna
+        self.lista = lista
+
 class IF(Instruccion):
     def __init__(self, expLogica, linea, columna, instrucciones = []):
         self.expLogica = expLogica
@@ -145,6 +157,13 @@ class FuncionTipo(Instruccion):
         self.id = id
         self.listaparametro = listaparametro
         self.tipo = tipo
+        self.instrucciones = instrucciones
+        self.linea = linea
+        self.columna = columna
+
+class FuncionMain(Instruccion):
+    def __init__(self, id, instrucciones, linea, columna):
+        self.id = id
         self.instrucciones = instrucciones
         self.linea = linea
         self.columna = columna

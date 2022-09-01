@@ -4,6 +4,7 @@ import tab_simbolos as TABS
 import tab_errores as TABE
 from expresiones import *
 from instrucciones import *
+import math
 
 mensaje = ""
 existeBreak = False
@@ -19,7 +20,56 @@ def instruccion_print(instruccion, ts, ambito):
     global mensaje
     mensaje += str(resolver_general(instruccion.exp, ts, ambito))
 
+def instruccion_print_esp(instruccion, ts, ambito):
+    global mensaje
+    listaexp = []
+    for n in instruccion.lista:
+        listaexp.append(resolver_general(n, ts, ambito))
+    if(isinstance(listaexp[0], str)):
+        texto = listaexp[0]
+        cantllaves = texto.count("{}")
+        cantexp = len(listaexp) - 1
+        if(cantllaves == cantexp):
+            for i in range(cantexp):
+                texto = texto.replace("{}", str(listaexp[i+1]), 1)
+            mensaje += texto
+        else:
+            mensajeE = "Error semantico: la cantidad de llaves no coinciden con la cantidad de expresiones \n"
+            mensaje += mensajeE
+            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+            TABE.agregarError(e)
+    else:
+        mensajeE = "Error semantico: print incorrecto \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_println_esp(instruccion, ts, ambito):
+    global mensaje
+    listaexp = []
+    for n in instruccion.lista:
+        listaexp.append(resolver_general(n, ts, ambito))
+    if(isinstance(listaexp[0], str)):
+        texto = listaexp[0]
+        cantllaves = texto.count("{}")
+        cantexp = len(listaexp) - 1
+        if(cantllaves == cantexp):
+            for i in range(cantexp):
+                texto = texto.replace("{}", str(listaexp[i+1]), 1)
+            mensaje += texto + '\n'
+        else:
+            mensajeE = "Error semantico: la cantidad de llaves no coinciden con la cantidad de expresiones \n"
+            mensaje += mensajeE
+            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+            TABE.agregarError(e)
+    else:
+        mensajeE = "Error semantico: print incorrecto \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
 def resolver_general(exp, ts, ambito):
+    global mensaje
     if(isinstance(exp, ExpresionDobleComilla)):
         return exp.val
     elif(isinstance(exp, ExpresionBool)):
@@ -42,24 +92,65 @@ def resolver_general(exp, ts, ambito):
         exp1 = resolver_general(exp.exp1, ts, ambito)
         exp2 = resolver_general(exp.exp2, ts, ambito)
         if(exp.operador == OPERACIONES_ARITMETICAS.MAS):
-            return exp1 + exp2
+            if((isinstance(exp1, int) and isinstance(exp2, float)) or (isinstance(exp1, float) and isinstance(exp2, int)) or (isinstance(exp1, int) and isinstance(exp2, str)) or (isinstance(exp1, str) and isinstance(exp2, int)) or (isinstance(exp1, int) and isinstance(exp2, bool)) or (isinstance(exp1, bool) and isinstance(exp2, int)) or (isinstance(exp1, float) and isinstance(exp2, str)) or (isinstance(exp1, str) and isinstance(exp2, float)) or (isinstance(exp1, float) and isinstance(exp2, bool)) or (isinstance(exp1, bool) and isinstance(exp2, float)) or (isinstance(exp1, str) and isinstance(exp2, bool)) or (isinstance(exp1, bool) and isinstance(exp2, str))):
+                mensajeE = "Error semantico: no se puede sumar diferentes tipos \n"
+                mensaje += mensajeE
+                e = TABE.Error(mensajeE, ambito, "", "", datetime.now())
+                TABE.agregarError(e)
+            else:
+                return exp1 + exp2
         if(exp.operador == OPERACIONES_ARITMETICAS.MENOS):
-            return exp1 - exp2
+            if((type(exp1) == int or type(exp1) == float) and (type(exp2) == float or type(exp2) == int)):
+                return exp1 - exp2
+            else:
+                mensajeE = "Error semantico: no se puede restar diferentes tipos \n"
+                mensaje += mensajeE
+                e = TABE.Error(mensajeE, ambito, "", "", datetime.now())
+                TABE.agregarError(e)
         if(exp.operador == OPERACIONES_ARITMETICAS.MULTIPLICACION):
             if((type(exp1) == int or type(exp1) == float) and (type(exp2) == float or type(exp2) == int)):
                 return exp1 * exp2
             else:
-                return str(exp1) + str(exp2)
+                mensajeE = "Error semantico: no se puede multiplicar diferentes tipos \n"
+                mensaje += mensajeE
+                e = TABE.Error(mensajeE, ambito, "", "", datetime.now())
+                TABE.agregarError(e)
         if(exp.operador == OPERACIONES_ARITMETICAS.DIVISION):
-            return exp1 / exp2
+            if((type(exp1) == int or type(exp1) == float) and (type(exp2) == float or type(exp2) == int)):
+                if(exp2 == 0):
+                    mensajeE = "Error semantico: no se puede dividir entre 0 \n"
+                    mensaje += mensajeE
+                    e = TABE.Error(mensajeE, ambito, "", "", datetime.now())
+                    TABE.agregarError(e)
+                else:
+                    return exp1 / exp2
+            else:
+                mensajeE = "Error semantico: no se puede dividir diferentes tipos \n"
+                mensaje += mensajeE
+                e = TABE.Error(mensajeE, ambito, "", "", datetime.now())
+                TABE.agregarError(e)
         if(exp.operador == OPERACIONES_ARITMETICAS.MODULO):
-            return exp1 % exp2
+            if((type(exp1) == int or type(exp1) == float) and (type(exp2) == float or type(exp2) == int)):
+                return exp1 % exp2
+            else:
+                mensajeE = "Error semantico: no se puede modular diferentes tipos \n"
+                mensaje += mensajeE
+                e = TABE.Error(mensajeE, ambito, "", "", datetime.now())
+                TABE.agregarError(e)
     elif(isinstance(exp, ExpresionLogica)):
         return (resolver_logica(exp, ts, ambito))
     elif(isinstance(exp, ExpresionRelacional)):
         return (resolver_relacional(exp, ts, ambito))
+    elif(isinstance(exp, ExpresionArreglo)):
+        return (resolver_expresion_arreglo(exp, ts, ambito))
     elif(isinstance(exp, ExpresionFnLen)):
         return (resolver_len(exp, ts, ambito))
+    elif(isinstance(exp, ExpresionAbs)):
+        return (resolver_abs(exp, ts, ambito))
+    elif(isinstance(exp, ExpresionSqrt)):
+        return (resolver_sqrt(exp, ts, ambito))
+    elif(isinstance(exp, ExpresionToString)):
+        return (resolver_to_string(exp, ts, ambito))
     elif(isinstance(exp, LlamadaFuncion)):
         return instruccion_llamada_funcion(exp, ts, ambito)
     elif(isinstance(exp, Contains)):
@@ -78,6 +169,78 @@ def resolver_len(expresion, ts, ambito):
             TABE.agregarError(e)
         else:
             return len(exp)
+
+def resolver_abs(expresion, ts, ambito):
+    global mensaje
+    exp = resolver_general(expresion.exp, ts, ambito)
+    if(exp == None):
+        print("no existe")
+    else:
+        if(isinstance(exp, str) or isinstance(exp, bool)):
+            mensajeE = "Error semantico: la funcion abs() solo es para valores numericos \n"
+            mensaje += mensajeE
+            e = TABE.Error(mensajeE, ambito, "", "", datetime.now())
+            TABE.agregarError(e)
+        else:
+            if(exp < 0):
+                return (exp * -1)
+            else:
+                return exp
+
+def resolver_sqrt(expresion, ts, ambito):
+    global mensaje
+    exp = resolver_general(expresion.exp, ts, ambito)
+    if(exp == None):
+        print("no existe")
+    else:
+        if(isinstance(exp, str) or isinstance(exp, bool)):
+            mensajeE = "Error semantico: la funcion abs() solo es para valores numericos \n"
+            mensaje += mensajeE
+            e = TABE.Error(mensajeE, ambito, "", "", datetime.now())
+            TABE.agregarError(e)
+        else:
+            return math.sqrt(exp)
+
+def resolver_to_string(expresion, ts, ambito):
+    global mensaje
+    exp = resolver_general(expresion.exp, ts, ambito)
+    if(exp == None):
+        print("no existe")
+    else:
+        if(isinstance(exp, int) or isinstance(exp, float) or isinstance(exp, bool)):
+            mensajeE = "Error semantico: la funcion to_string() solo es para string \n"
+            mensaje += mensajeE
+            e = TABE.Error(mensajeE, ambito, "", "", datetime.now())
+            TABE.agregarError(e)
+        else:
+            return str(exp)
+
+def resolver_expresion_arreglo(expresion, ts, ambito):
+    global mensaje
+    identificador = resolver_general(expresion.id, ts, ambito)
+    print(identificador)
+    if(identificador == None):
+        mensajeE = "Error semantico: la variable no existe \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, "", "", datetime.now())
+        TABE.agregarError(e)
+    else:
+        if(isinstance(identificador,list)):
+            posicion = resolver_general(expresion.pos, ts, ambito)
+            tamanio = len(identificador)
+            pos = int(posicion)
+            if(pos <= (tamanio - 1)):
+                return identificador[posicion]
+            else:
+                mensajeE = "Error semantico: la posicion excede al tamanio del arreglo \n"
+                mensaje += mensajeE
+                e = TABE.Error(mensajeE, ambito, "", "", datetime.now())
+                TABE.agregarError(e)
+        else:
+            mensajeE = "Error semantico: la variable no es de tipo arreglo \n"
+            mensaje += mensajeE
+            e = TABE.Error(mensajeE, ambito, "", "", datetime.now())
+            TABE.agregarError(e)
 
 def resolver_logica(expLogica, ts, ambito):
     exp1 = resolver_general(expLogica.exp1, ts, ambito)
@@ -104,6 +267,7 @@ def resolver_relacional(expRelacional, ts, ambito):
     elif(expRelacional.operador == OPERACION_RELACIONAL.OR):
         return (exp1 or exp2)
     elif(expRelacional.operador == OPERACION_RELACIONAL.NOT):
+        exp2 = resolver_general(expRelacional.exp2, ts, ambito)
         return not exp2
 
 def instruccion_asignacion_mutable(asignacion, ts, ambito):
@@ -453,6 +617,7 @@ def instruccion_while(instruccion, ts, ambito):
 def instruccion_for(instruccion, ts, ambito):
     global existeBreak
     global existeContinue
+    listaArreglo = []
     if(instruccion.exp2 != ""):
         expresion1 = resolver_general(instruccion.exp1, ts, "for_"+ambito)
         asignar = AsignacionMutable(instruccion.id, ExpresionNumero(expresion1), instruccion.linea, instruccion.columna)
@@ -469,6 +634,24 @@ def instruccion_for(instruccion, ts, ambito):
             if(existeContinue):
                 existeContinue = False
                 continue
+    else:
+        for n in instruccion.exp1:
+            listaArreglo.append(resolver_general(n, ts, ambito))
+        asignar = AsignacionArregloMutable(instruccion.id, instruccion.exp1, instruccion.linea, instruccion.columna)
+        instruccion_asignacion_arreglo_mutable(asignar, ts, "for_"+ambito)
+        inicio = 0
+        tamlista = len(listaArreglo)
+        while(inicio < tamlista):
+            simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaArreglo[inicio], True, "for_"+ambito, instruccion.linea, instruccion.columna)
+            ts.actualizar(simbolo)
+            inicio = inicio + 1
+            procesar_instrucciones(instruccion.instrucciones, ts, "for_"+ambito)
+            if(existeBreak):
+                existeBreak = False
+                break
+            if(existeContinue):
+                existeContinue = False
+                continue      
 
 def instruccion_asignacion_arreglo_mutable(instruccion, ts, ambito):
     global mensaje
@@ -480,6 +663,7 @@ def instruccion_asignacion_arreglo_mutable(instruccion, ts, ambito):
     bandera_string = False
     for n in instruccion.listaexp:
         listaValor.append(resolver_general(n, ts, ambito))
+    print(listaValor)
     for valor in listaValor:
         if(isinstance(valor, bool)):
             bandera_bool = True
@@ -1257,6 +1441,16 @@ def instruccion_funcion(funcion, ts, ambito):
         ts.agregar_funcion(fuction)
         print("Se agrego la funcion")
 
+def instruccion_funcion_main(funcion, ts, ambito):
+    fuction = TABS.Funcion(funcion.id, [], "", funcion.instrucciones, ambito, funcion.linea, funcion.columna)
+    comprobar = ts.comprobar_funcion(fuction)
+    if(comprobar):
+        ts.actualizar_funcion(fuction)
+        procesar_instrucciones(funcion.instrucciones, ts, ambito)
+    else:
+        ts.agregar_funcion(fuction)
+        procesar_instrucciones(funcion.instrucciones, ts, ambito)
+
 def instruccion_llamada_funcion(funcion, ts, ambito):
     global existeReturn
     global mensaje
@@ -1486,6 +1680,10 @@ def procesar_instrucciones(instrucciones, ts, ambito):
             instruccion_println(instruccion, ts, ambito)
         elif(isinstance(instruccion,Print)):
             instruccion_print(instruccion, ts, ambito)
+        elif(isinstance(instruccion,PrintlnEsp)):
+            instruccion_println_esp(instruccion, ts, ambito)
+        elif(isinstance(instruccion,PrintEsp)):
+            instruccion_print_esp(instruccion, ts, ambito)
         elif(isinstance(instruccion, AsignacionMutable)):
             instruccion_asignacion_mutable(instruccion, ts, ambito)
         elif(isinstance(instruccion, AsignacionMutableTipo)):
@@ -1520,6 +1718,8 @@ def procesar_instrucciones(instrucciones, ts, ambito):
             instruccion_asignacion_vector_vacio_no_mutable(instruccion, ts, ambito)
         elif(isinstance(instruccion, Funcion)):
             instruccion_funcion(instruccion, ts, ambito)
+        elif(isinstance(instruccion, FuncionMain)):
+            instruccion_funcion_main(instruccion, ts, ambito)
         elif(isinstance(instruccion, FuncionTipo)):
             instruccion_funcion_tipo(instruccion, ts, ambito)
         elif(isinstance(instruccion, LlamadaFuncion)):

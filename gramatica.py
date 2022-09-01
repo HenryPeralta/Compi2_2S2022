@@ -206,7 +206,7 @@ lexer = lex.lex()
 precedence = (
     ('left', 'OR'),
     ('left', 'AND'),
-    ('right', 'NOT'),
+    ('right', 'EXCLAMACION'),
     ('left', 'IGUALIGUAL', 'NOIGUAL', 'MENOR', 'MAYOR', 'MAYORIGUAL', 'MENORIGUAL'),
     ('left', 'MAS', 'MENOS'),
     ('left', 'POR', 'DIVISION', 'MODULO'),
@@ -248,6 +248,7 @@ def p_instruccion(t):
                     | nativa_insert
                     | nativa_remove
                     | sen_transferencia
+                    | main
                     | funcion
                     | llamada_funcion
                     | return
@@ -288,7 +289,7 @@ def p_relacionales(t):
 
 def p_relacionales_not(t):
     '''
-        expresion : NOT expresion
+        expresion : EXCLAMACION expresion
     '''
     t[0] = ExpresionRelacional("", t[2], OPERACION_RELACIONAL.NOT)
 
@@ -325,9 +326,21 @@ def p_fn_nativas_vectores(t):
     '''
         expresion : expresion PUNTO LEN PARENTIZQ PARENTDER
                   | expresion PUNTO CONTAINS PARENTIZQ AMPERSAND expresion PARENTDER
+                  | expresion PUNTO ABS PARENTIZQ PARENTDER
+                  | expresion PUNTO SQRT PARENTIZQ PARENTDER
+                  | expresion PUNTO TO_STRING PARENTIZQ PARENTDER
+                  | expresion CORCHIZQ expresion CORCHDER
     '''
     if(t[3] == "len"):
         t[0] = ExpresionFnLen(t[1], FUNCIONES_NATIVAS_VECTORES.LEN)
+    elif(t[3] == "abs"):
+        t[0] = ExpresionAbs(t[1], FUNCIONES_NATIVAS.ABS)
+    elif(t[3] == "sqrt"):
+        t[0] = ExpresionSqrt(t[1], FUNCIONES_NATIVAS.SQRT)
+    elif(t[3] == "to_string"):
+        t[0] = ExpresionToString(t[1], FUNCIONES_NATIVAS.TO_STRING)
+    elif(t[2] == "["):
+        t[0] = ExpresionArreglo(t[1], t[3])
     else:
         t[0] = Contains(t[1], t[6])
 
@@ -340,6 +353,35 @@ def p_impresion(t):
         t[0] = Print(t[4])
     elif(t[1] == "println"):
         t[0] = Println(t[4])
+
+def p_impresion_especial(t):
+    '''
+        impresion : PRINT EXCLAMACION PARENTIZQ listaimpresion PARENTDER PUNTOYCOMA
+                  | PRINTLN EXCLAMACION PARENTIZQ listaimpresion PARENTDER PUNTOYCOMA
+    '''
+    if(t[1] == "print"):
+        t[0] = PrintEsp(t.slice[1].lineno, 1, t[4])
+    elif(t[1] == "println"):
+        t[0] = PrintlnEsp(t.slice[1].lineno, 1, t[4])
+
+def p_lista_impresion(t):
+    '''
+        listaimpresion : listaimpresion COMA implimir
+    '''
+    t[1].append(t[3])
+    t[0] = t[1]
+
+def p_a_impresion(t):
+    '''
+        listaimpresion : implimir
+    '''
+    t[0] = [t[1]]
+
+def p_implimir_exp(t):
+    '''
+        implimir : expresion 
+    '''
+    t[0] = t[1]
 
 def p_declaracion_mutable(t):
     '''
@@ -416,6 +458,12 @@ def p_return(t):
         return : RETURN expresion PUNTOYCOMA 
     '''
     t[0] = InstruccionReturn(t[2])
+
+def p_main(t):
+    '''
+        main : FN MAIN PARENTIZQ PARENTDER LLAVEIZQ instrucciones LLAVEDER
+    '''
+    t[0] = FuncionMain(t[2], t[6], t.slice[1].lineno, 1)
 
 def p_funcion_sin_return(t):
     '''
@@ -565,8 +613,12 @@ def p_ciclo_while(t):
 def p_ciclo_for(t):
     '''
         ciclo_for : FOR ID IN expresion PUNTO PUNTO expresion LLAVEIZQ instrucciones LLAVEDER
+                  | FOR ID IN CORCHIZQ llamada_parametros CORCHDER LLAVEIZQ instrucciones LLAVEDER
     '''
-    t[0] = CicloFor(t[2], t[4], t[7], t[9], t.slice[1].lineno, 1)
+    if(t[4] == "["):
+        t[0] = CicloFor(t[2], t[5], "", t[8], t.slice[1].lineno, 1)
+    else:
+        t[0] = CicloFor(t[2], t[4], t[7], t[9], t.slice[1].lineno, 1)
 
 def p_sen_transferencia(t):
     '''
@@ -687,12 +739,6 @@ def p_fnativa_remove(t):
         nativa_remove : ID PUNTO REMOVE PARENTIZQ expresion PARENTDER PUNTOYCOMA
     '''
     t[0] = Remove(t[1], t[5], t.slice[1].lineno, 1)
-
-#def pfnativa_contains(t):
-#    '''
-#        expresion : ID PUNTO CONTAINS PARENTIZQ AMPERSAND expresion PARENTDER
-#    '''
-#    t[0] = Contains(t[1], t[6], t.slice[1].lineno, 1)
 
 def p_declaracion_arreglo_mutable(t):
     '''

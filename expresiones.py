@@ -70,6 +70,11 @@ class ExpresionIdentificador(ExpresionNumerica):
     def __init__(self, id = ""):
         self.id = id
 
+class ExpresionArreglo(ExpresionNumerica):
+    def __init__(self, id = "", pos = ""):
+        self.id = id
+        self.pos = pos
+
 class ExpresionBool(ExpresionNumerica):
     def __init__(self, boolean):
         self.boolean = boolean
@@ -94,4 +99,19 @@ class ExpresionFnLen():
 class ExpresionParametro():
     def __init__(self, id, tipo):
         self.id = id
+        self.tipo = tipo
+
+class ExpresionAbs():
+    def __init__(self, exp, tipo):
+        self.exp = exp
+        self.tipo = tipo
+
+class ExpresionSqrt():
+    def __init__(self, exp, tipo):
+        self.exp = exp
+        self.tipo = tipo
+
+class ExpresionToString():
+    def __init__(self, exp, tipo):
+        self.exp = exp
         self.tipo = tipo
