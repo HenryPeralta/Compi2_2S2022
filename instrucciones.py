@@ -241,6 +241,11 @@ class Remove(Instruccion):
         self.linea = linea
         self.columna = columna
 
+class RegresoRemove(Instruccion):
+    def __init__(self, id, pos):
+        self.id = id
+        self.pos = pos
+
 class Contains(Instruccion):
     def __init__(self, id, exp):
         self.id = id

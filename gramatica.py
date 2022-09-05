@@ -12,7 +12,7 @@ reserved = {
     'String' : 'STRING',
     'str' : 'STR',
     'usize' : 'USIZE',
-    'vec' : 'VEC',
+    'Vec' : 'VEC',
 
     #struct
     'struct' : 'STRUCT',
@@ -330,6 +330,7 @@ def p_fn_nativas_vectores(t):
                   | expresion PUNTO SQRT PARENTIZQ PARENTDER
                   | expresion PUNTO TO_STRING PARENTIZQ PARENTDER
                   | expresion CORCHIZQ expresion CORCHDER
+                  | ID PUNTO REMOVE PARENTIZQ expresion PARENTDER
     '''
     if(t[3] == "len"):
         t[0] = ExpresionFnLen(t[1], FUNCIONES_NATIVAS_VECTORES.LEN)
@@ -341,6 +342,8 @@ def p_fn_nativas_vectores(t):
         t[0] = ExpresionToString(t[1], FUNCIONES_NATIVAS.TO_STRING)
     elif(t[2] == "["):
         t[0] = ExpresionArreglo(t[1], t[3])
+    elif(t[3] == "remove"):
+        t[0] = RegresoRemove(t[1], t[5])
     else:
         t[0] = Contains(t[1], t[6])
 
@@ -491,42 +494,54 @@ def p_parametros(t):
 def p_parametro_tipo(t):
     '''
         parametro : ID DOSPUNTOS tipo
+                  | ID DOSPUNTOS AMPERSAND MUT CORCHIZQ tipo CORCHDER
+                  | ID DOSPUNTOS AMPERSAND MUT VEC MENOR tipo MAYOR
     '''
-    t[0] = ExpresionParametro(t[1], t[3])
+    if(t[3] == "&"):
+        if(t[5] == "["):
+            t[0] = ExpresionParametro(t[1], t[6])
+        else:
+            t[0] = ExpresionParametro(t[1], t[7])
+    else:    
+        t[0] = ExpresionParametro(t[1], t[3])
 
 def p_llamada_funcion(t):
     '''
         llamada_funcion : ID PARENTIZQ PARENTDER PUNTOYCOMA
-                        | ID PARENTIZQ llamada_parametros PARENTDER PUNTOYCOMA
+                        | ID PARENTIZQ llamada_parametros_fun PARENTDER PUNTOYCOMA
     '''
     if(t[3] == ")"):
         t[0] = LlamadaFuncion(t[1], [], t.slice[1].lineno, 1)
     else:
         t[0] = LlamadaFuncion(t[1], t[3], t.slice[1].lineno, 1)
 
-def p_lista_llamada_parametros(t):
+def p_lista_llamada_parametros_fun(t):
     '''
-        llamada_parametros : llamada_parametros COMA valor_parametro
+        llamada_parametros_fun : llamada_parametros_fun COMA valor_parametro_fun
     '''
     t[1].append(t[3])
     t[0] = t[1]
 
-def p_llamada_parametros(t):
+def p_llamada_parametros_fun(t):
     '''
-        llamada_parametros : valor_parametro
+        llamada_parametros_fun : valor_parametro_fun
     '''
     t[0] = [t[1]]
 
-def p_valor_parametro(t):
+def p_valor_parametro_fun(t):
     '''
-        valor_parametro : expresion
+        valor_parametro_fun : expresion
+                            | AMPERSAND MUT expresion
     '''
-    t[0] = t[1]
+    if(t[1] == "&"):
+        t[0] = t[3]
+    else:
+        t[0] = t[1]
 
 def p_llamada_funcion2(t):
     '''
         expresion : ID PARENTIZQ PARENTDER 
-                  | ID PARENTIZQ llamada_parametros PARENTDER
+                  | ID PARENTIZQ llamada_parametros_fun PARENTDER
     '''
     if(t[3] == ")"):
         t[0] = LlamadaFuncion(t[1], [], t.slice[1].lineno, 1)
@@ -614,11 +629,15 @@ def p_ciclo_for(t):
     '''
         ciclo_for : FOR ID IN expresion PUNTO PUNTO expresion LLAVEIZQ instrucciones LLAVEDER
                   | FOR ID IN CORCHIZQ llamada_parametros CORCHDER LLAVEIZQ instrucciones LLAVEDER
+                  | FOR ID IN expresion LLAVEIZQ instrucciones LLAVEDER
     '''
     if(t[4] == "["):
         t[0] = CicloFor(t[2], t[5], "", t[8], t.slice[1].lineno, 1)
     else:
-        t[0] = CicloFor(t[2], t[4], t[7], t[9], t.slice[1].lineno, 1)
+        if(t[5] == "."):
+            t[0] = CicloFor(t[2], t[4], t[7], t[9], t.slice[1].lineno, 1)
+        else:
+            t[0] = CicloFor(t[2], t[4], "", t[6], t.slice[1].lineno, 1)
 
 def p_sen_transferencia(t):
     '''

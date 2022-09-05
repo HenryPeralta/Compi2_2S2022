@@ -155,6 +155,8 @@ def resolver_general(exp, ts, ambito):
         return instruccion_llamada_funcion(exp, ts, ambito)
     elif(isinstance(exp, Contains)):
         return instruccion_contains(exp, ts, ambito)
+    elif(isinstance(exp, RegresoRemove)):
+        return instruccion_regreso_remove(exp, ts, ambito)
 
 def resolver_len(expresion, ts, ambito):
     global mensaje
@@ -635,23 +637,51 @@ def instruccion_for(instruccion, ts, ambito):
                 existeContinue = False
                 continue
     else:
-        for n in instruccion.exp1:
-            listaArreglo.append(resolver_general(n, ts, ambito))
-        asignar = AsignacionArregloMutable(instruccion.id, instruccion.exp1, instruccion.linea, instruccion.columna)
-        instruccion_asignacion_arreglo_mutable(asignar, ts, "for_"+ambito)
-        inicio = 0
-        tamlista = len(listaArreglo)
-        while(inicio < tamlista):
-            simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaArreglo[inicio], True, "for_"+ambito, instruccion.linea, instruccion.columna)
-            ts.actualizar(simbolo)
-            inicio = inicio + 1
-            procesar_instrucciones(instruccion.instrucciones, ts, "for_"+ambito)
-            if(existeBreak):
-                existeBreak = False
-                break
-            if(existeContinue):
-                existeContinue = False
-                continue      
+        if(isinstance(instruccion.exp1, ExpresionIdentificador)):
+            valor = resolver_general(instruccion.exp1, ts, "for_"+ambito)
+            if(type(valor[0]) == int): 
+                asignar = AsignacionMutable(instruccion.id, ExpresionNumero(valor[0]), instruccion.linea, instruccion.columna)
+                instruccion_asignacion_mutable(asignar, ts, "for_"+ambito)
+            elif(type(valor[0]) == str): 
+                asignar = AsignacionMutable(instruccion.id, ExpresionDobleComilla(valor[0]), instruccion.linea, instruccion.columna)
+                instruccion_asignacion_mutable(asignar, ts, "for_"+ambito)
+            elif(type(valor[0]) == float):
+                asignar = AsignacionMutable(instruccion.id, ExpresionNumero(valor[0]), instruccion.linea, instruccion.columna)
+                instruccion_asignacion_mutable(asignar, ts, "for_"+ambito)
+            elif(type(valor[0]) == bool): 
+                asignar = AsignacionMutable(instruccion.id, ExpresionBool(valor[0]), instruccion.linea, instruccion.columna)
+                instruccion_asignacion_mutable(asignar, ts, "for_"+ambito)
+            inicio = 0
+            tamlista = len(valor)
+            while(inicio < tamlista):
+                simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, valor[inicio], True, "for_"+ambito, instruccion.linea, instruccion.columna)
+                ts.actualizar(simbolo)
+                inicio = inicio + 1
+                procesar_instrucciones(instruccion.instrucciones, ts, "for_"+ambito)
+                if(existeBreak):
+                    existeBreak = False
+                    break
+                if(existeContinue):
+                    existeContinue = False
+                    continue      
+        else:
+            for n in instruccion.exp1:
+                listaArreglo.append(resolver_general(n, ts, ambito))
+            asignar = AsignacionArregloMutable(instruccion.id, instruccion.exp1, instruccion.linea, instruccion.columna)
+            instruccion_asignacion_arreglo_mutable(asignar, ts, "for_"+ambito)
+            inicio = 0
+            tamlista = len(listaArreglo)
+            while(inicio < tamlista):
+                simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaArreglo[inicio], True, "for_"+ambito, instruccion.linea, instruccion.columna)
+                ts.actualizar(simbolo)
+                inicio = inicio + 1
+                procesar_instrucciones(instruccion.instrucciones, ts, "for_"+ambito)
+                if(existeBreak):
+                    existeBreak = False
+                    break
+                if(existeContinue):
+                    existeContinue = False
+                    continue      
 
 def instruccion_asignacion_arreglo_mutable(instruccion, ts, ambito):
     global mensaje
@@ -1664,6 +1694,24 @@ def instruccion_contains(exp, ts, ambito):
             return True
         else:
             return False  
+
+def instruccion_regreso_remove(exp, ts, ambito):
+    global mensaje
+    simbolo = TABS.Simbolo(exp.id, "", "", "", "", 0, 0)
+    comprobar = ts.comprobar(simbolo)
+    if(comprobar):
+        print("Se encontro el id")
+        posicion = resolver_general(exp.pos, ts, ambito)
+        lista = ts.obtener(exp.id).valor
+        retornoValor = lista[posicion]
+        del lista[posicion]
+        return retornoValor
+    else:
+        print("No se encontro el ID")
+        mensajeE = "Error semantico: la variable es incorrecta \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, 1, 1, datetime.now())
+        TABE.agregarError(e)
 
 def procesar_instrucciones(instrucciones, ts, ambito):
     global mensaje
