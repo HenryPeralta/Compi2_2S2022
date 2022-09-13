@@ -157,6 +157,8 @@ def resolver_general(exp, ts, ambito):
         return instruccion_contains(exp, ts, ambito)
     elif(isinstance(exp, RegresoRemove)):
         return instruccion_regreso_remove(exp, ts, ambito)
+    elif(isinstance(exp, ExpresionAccesoStruct)):
+        return resolver_acceso_struct(exp, ts, ambito)
 
 def resolver_len(expresion, ts, ambito):
     global mensaje
@@ -1697,18 +1699,988 @@ def instruccion_contains(exp, ts, ambito):
 
 def instruccion_regreso_remove(exp, ts, ambito):
     global mensaje
-    simbolo = TABS.Simbolo(exp.id, "", "", "", "", 0, 0)
+    simbolo = TABS.Simbolo((exp.id).id, "", "", "", "", 0, 0)
     comprobar = ts.comprobar(simbolo)
     if(comprobar):
         print("Se encontro el id")
         posicion = resolver_general(exp.pos, ts, ambito)
-        lista = ts.obtener(exp.id).valor
+        lista = ts.obtener((exp.id).id).valor
         retornoValor = lista[posicion]
         del lista[posicion]
         return retornoValor
     else:
         print("No se encontro el ID")
         mensajeE = "Error semantico: la variable es incorrecta \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, 1, 1, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_struct(instruccion, ts, ambito):
+    struc = TABS.Struct(instruccion.id, instruccion.lista, ambito, instruccion.linea, instruccion.columna)
+    comprobar = ts.comprobar_struct(struc)
+    if(comprobar):
+        ts.actualizar_struct(struc)
+    else:
+        ts.agregar_struct(struc)
+
+def instruccion_asignacion_arreglo_mutable_dimensional(instruccion, ts, ambito):
+    global mensaje
+    listaValor = []
+    bandera_i64 = False
+    bandera_f64 = False
+    bandera_bool = False
+    bandera_char = False
+    bandera_string = False
+    for n in instruccion.listaexp:
+        listainicial = []
+        for m in n:
+            listainicial.append(resolver_general(m, ts, ambito))
+        listaValor.append(listainicial)
+    for row in listaValor:
+        for valor in row:
+            if(isinstance(valor, bool)):
+                bandera_bool = True
+            elif(isinstance(valor, int)):
+                bandera_i64 = True
+            elif(isinstance(valor, float)):
+                bandera_f64 = True
+            elif(isinstance(valor, str)):
+                if(len(valor) == 1):
+                    bandera_char = True
+                else:
+                    bandera_string = True
+    if(bandera_i64 == True and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == True and bandera_bool == False and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == True and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == True and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == True):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    else:
+        mensajeE = "Error semantico: los valores del arreglo no son del mismo tipo \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_asignacion_arreglo_mutable_tipo_dimensional(instruccion, ts, ambito):
+    global mensaje
+    listaValor = []
+    bandera_i64 = False
+    bandera_f64 = False
+    bandera_bool = False
+    bandera_char = False
+    bandera_string = False
+    for n in instruccion.listaexp:
+        listainicial = []
+        for m in n:
+            listainicial.append(resolver_general(m, ts, ambito))
+        listaValor.append(listainicial)
+    tamanio1 = resolver_general(instruccion.tamanio1, ts, ambito)
+    tamanio2 = resolver_general(instruccion.tamanio2, ts, ambito)
+    if(isinstance(tamanio1, int)):
+        if(isinstance(tamanio2, int)): 
+            if(tamanio1 == len(listaValor)):   
+                for row in listaValor:
+                    for valor in row:
+                        if(isinstance(valor, bool)):
+                            bandera_bool = True
+                        elif(isinstance(valor, int)):
+                            bandera_i64 = True
+                        elif(isinstance(valor, float)):
+                            bandera_f64 = True
+                        elif(isinstance(valor, str)):
+                            if(len(valor) == 1):
+                                bandera_char = True
+                            else:
+                                bandera_string = True
+                    if(bandera_i64 == True and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == False):
+                        if(TABS.TIPO_DATO.I64 == instruccion.tipo):
+                            simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+                            comprobar = ts.comprobar(simbolo)
+                            if(comprobar):
+                                ts.actualizar(simbolo)
+                            else:
+                                ts.agregar(simbolo)
+                        else:
+                            mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                            mensaje += mensajeE
+                            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                            TABE.agregarError(e)
+                    elif(bandera_i64 == False and bandera_f64 == True and bandera_bool == False and bandera_char == False and bandera_string == False):
+                        if(TABS.TIPO_DATO.F64 == instruccion.tipo):
+                            simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+                            comprobar = ts.comprobar(simbolo)
+                            if(comprobar):
+                                ts.actualizar(simbolo)
+                            else:
+                                ts.agregar(simbolo)
+                        else:
+                            mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                            mensaje += mensajeE
+                            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                            TABE.agregarError(e)
+                    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == True and bandera_char == False and bandera_string == False):
+                        if(TABS.TIPO_DATO.BOOL == instruccion.tipo):
+                            simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+                            comprobar = ts.comprobar(simbolo)
+                            if(comprobar):
+                                ts.actualizar(simbolo)
+                            else:
+                                ts.agregar(simbolo)
+                        else:
+                            mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                            mensaje += mensajeE
+                            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                            TABE.agregarError(e)
+                    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == True and bandera_string == False):
+                        if(TABS.TIPO_DATO.CHAR == instruccion.tipo):
+                            simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+                            comprobar = ts.comprobar(simbolo)
+                            if(comprobar):
+                                ts.actualizar(simbolo)
+                            else:
+                                ts.agregar(simbolo)
+                        else:
+                            mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                            mensaje += mensajeE
+                            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                            TABE.agregarError(e)
+                    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == True):
+                        if(TABS.TIPO_DATO.STRING == instruccion.tipo):
+                            simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+                            comprobar = ts.comprobar(simbolo)
+                            if(comprobar):
+                                ts.actualizar(simbolo)
+                            else:
+                                ts.agregar(simbolo)
+                        else:
+                            mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                            mensaje += mensajeE
+                            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                            TABE.agregarError(e)
+                    else:
+                        mensajeE = "Error semantico: los valores del arreglo no son del mismo tipo \n"
+                        mensaje += mensajeE
+                        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                        TABE.agregarError(e)
+            else:
+                mensajeE = "Error semantico: el tamanio del arreglo no coincide \n"
+                mensaje += mensajeE
+                e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                TABE.agregarError(e)
+        else:
+            mensajeE = "Error semantico: el valor del tamaño debe ser un entero \n"
+            mensaje += mensajeE
+            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+            TABE.agregarError(e)
+    else:
+        mensajeE = "Error semantico: el valor del tamaño debe ser un entero \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_asignacion_arreglo_no_mutable_dimensional(instruccion, ts, ambito):
+    global mensaje
+    listaValor = []
+    bandera_i64 = False
+    bandera_f64 = False
+    bandera_bool = False
+    bandera_char = False
+    bandera_string = False
+    for n in instruccion.listaexp:
+        listainicial = []
+        for m in n:
+            listainicial.append(resolver_general(m, ts, ambito))
+        listaValor.append(listainicial)
+    for row in listaValor:
+        for valor in row:
+            if(isinstance(valor, bool)):
+                bandera_bool = True
+            elif(isinstance(valor, int)):
+                bandera_i64 = True
+            elif(isinstance(valor, float)):
+                bandera_f64 = True
+            elif(isinstance(valor, str)):
+                if(len(valor) == 1):
+                    bandera_char = True
+                else:
+                    bandera_string = True
+    if(bandera_i64 == True and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == True and bandera_bool == False and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == True and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == True and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == True):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    else:
+        mensajeE = "Error semantico: los valores del arreglo no son del mismo tipo \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_asignacion_arreglo_no_mutable_tipo_dimensional(instruccion, ts, ambito):
+    global mensaje
+    listaValor = []
+    bandera_i64 = False
+    bandera_f64 = False
+    bandera_bool = False
+    bandera_char = False
+    bandera_string = False
+    for n in instruccion.listaexp:
+        listainicial = []
+        for m in n:
+            listainicial.append(resolver_general(m, ts, ambito))
+        listaValor.append(listainicial)
+    tamanio1 = resolver_general(instruccion.tamanio1, ts, ambito)
+    tamanio2 = resolver_general(instruccion.tamanio2, ts, ambito)
+    if(isinstance(tamanio1, int)):
+        if(isinstance(tamanio2, int)): 
+            if(tamanio1 == len(listaValor)):   
+                for row in listaValor:
+                    for valor in row:
+                        if(isinstance(valor, bool)):
+                            bandera_bool = True
+                        elif(isinstance(valor, int)):
+                            bandera_i64 = True
+                        elif(isinstance(valor, float)):
+                            bandera_f64 = True
+                        elif(isinstance(valor, str)):
+                            if(len(valor) == 1):
+                                bandera_char = True
+                            else:
+                                bandera_string = True
+                    if(bandera_i64 == True and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == False):
+                        if(TABS.TIPO_DATO.I64 == instruccion.tipo):
+                            simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+                            comprobar = ts.comprobar(simbolo)
+                            if(comprobar):
+                                ts.actualizar(simbolo)
+                            else:
+                                ts.agregar(simbolo)
+                        else:
+                            mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                            mensaje += mensajeE
+                            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                            TABE.agregarError(e)
+                    elif(bandera_i64 == False and bandera_f64 == True and bandera_bool == False and bandera_char == False and bandera_string == False):
+                        if(TABS.TIPO_DATO.F64 == instruccion.tipo):
+                            simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+                            comprobar = ts.comprobar(simbolo)
+                            if(comprobar):
+                                ts.actualizar(simbolo)
+                            else:
+                                ts.agregar(simbolo)
+                        else:
+                            mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                            mensaje += mensajeE
+                            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                            TABE.agregarError(e)
+                    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == True and bandera_char == False and bandera_string == False):
+                        if(TABS.TIPO_DATO.BOOL == instruccion.tipo):
+                            simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+                            comprobar = ts.comprobar(simbolo)
+                            if(comprobar):
+                                ts.actualizar(simbolo)
+                            else:
+                                ts.agregar(simbolo)
+                        else:
+                            mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                            mensaje += mensajeE
+                            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                            TABE.agregarError(e)
+                    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == True and bandera_string == False):
+                        if(TABS.TIPO_DATO.CHAR == instruccion.tipo):
+                            simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+                            comprobar = ts.comprobar(simbolo)
+                            if(comprobar):
+                                ts.actualizar(simbolo)
+                            else:
+                                ts.agregar(simbolo)
+                        else:
+                            mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                            mensaje += mensajeE
+                            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                            TABE.agregarError(e)
+                    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == True):
+                        if(TABS.TIPO_DATO.STRING == instruccion.tipo):
+                            simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+                            comprobar = ts.comprobar(simbolo)
+                            if(comprobar):
+                                ts.actualizar(simbolo)
+                            else:
+                                ts.agregar(simbolo)
+                        else:
+                            mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                            mensaje += mensajeE
+                            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                            TABE.agregarError(e)
+                    else:
+                        mensajeE = "Error semantico: los valores del arreglo no son del mismo tipo \n"
+                        mensaje += mensajeE
+                        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                        TABE.agregarError(e)
+            else:
+                mensajeE = "Error semantico: el tamanio del arreglo no coincide \n"
+                mensaje += mensajeE
+                e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                TABE.agregarError(e)
+        else:
+            mensajeE = "Error semantico: el valor del tamaño debe ser un entero \n"
+            mensaje += mensajeE
+            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+            TABE.agregarError(e)
+    else:
+        mensajeE = "Error semantico: el valor del tamaño debe ser un entero \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_asignacion_nuevo_arreglo_dimensional(instruccion, ts, ambito):
+    global mensaje
+    existeVar = ts.existeVariable(instruccion.id)
+    if(existeVar):
+        variable = ts.obtener(instruccion.id)
+        variableN = variable
+        posiciona1 = resolver_general(instruccion.posicion1, ts, ambito)
+        posiciona2 = resolver_general(instruccion.posicion2, ts, ambito)
+        if(isinstance(posiciona1, int)):
+            if(isinstance(posiciona2, int)):
+                if(variable.mutable == True):
+                    tamanio = len(variableN.valor)
+                    for n in variableN.valor:
+                        tamaniointerior = len(n)
+                    valornuevo = resolver_general(instruccion.valor, ts, ambito)
+                    if(posiciona1 >= tamanio):
+                        mensajeE = "Error semantico: el rango es mayor que el tamanio del arreglo \n"
+                        mensaje += mensajeE
+                        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                        TABE.agregarError(e)
+                    else:
+                        if(posiciona2 >= tamaniointerior):
+                            mensajeE = "Error semantico: el rango es mayor que el tamanio del arreglo \n"
+                            mensaje += mensajeE
+                            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                            TABE.agregarError(e)
+                        else:
+                            for valorarreglo in range(tamanio):
+                                if(posiciona1 == valorarreglo):
+                                    for valorarreglointerior in range(tamaniointerior):
+                                        if(posiciona2 == valorarreglointerior):
+                                            variableN.valor[valorarreglo][valorarreglointerior] = valornuevo
+                            ts.actualizarValor(variable, variableN.valor)
+                else:
+                    mensajeE = "Error semantico: el arreglo no es mutable \n"
+                    mensaje += mensajeE
+                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                    TABE.agregarError(e)
+            else:
+                mensajeE = "Error semantico: la posicion del arreglo no es un entero \n"
+                mensaje += mensajeE
+                e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                TABE.agregarError(e)
+        else:
+            mensajeE = "Error semantico: la posicion del arreglo no es un entero \n"
+            mensaje += mensajeE
+            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+            TABE.agregarError(e)
+    else:
+        mensajeE = "Error semantico: la variable no ha sido declarada \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_asignacion_arreglo_mutable_dimensional_3x3(instruccion, ts, ambito):
+    global mensaje
+    listaValor = []
+    bandera_i64 = False
+    bandera_f64 = False
+    bandera_bool = False
+    bandera_char = False
+    bandera_string = False
+    for n in instruccion.listaexp:
+        listainicial = []
+        for m in n:
+            listafinal = []
+            for k in m:
+                listafinal.append(resolver_general(k, ts, ambito))
+            listainicial.append(listafinal)
+        listaValor.append(listainicial)
+    for row in listaValor:
+        for colum in row:
+            for valor in colum:
+                if(isinstance(valor, bool)):
+                    bandera_bool = True
+                elif(isinstance(valor, int)):
+                    bandera_i64 = True
+                elif(isinstance(valor, float)):
+                    bandera_f64 = True
+                elif(isinstance(valor, str)):
+                    if(len(valor) == 1):
+                        bandera_char = True
+                    else:
+                        bandera_string = True
+    if(bandera_i64 == True and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == True and bandera_bool == False and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == True and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == True and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == True):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    else:
+        mensajeE = "Error semantico: los valores del arreglo no son del mismo tipo \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_asignacion_arreglo_mutable_tipo_dimensional_3x3(instruccion, ts, ambito):
+    global mensaje
+    listaValor = []
+    bandera_i64 = False
+    bandera_f64 = False
+    bandera_bool = False
+    bandera_char = False
+    bandera_string = False
+    for n in instruccion.listaexp:
+        listainicial = []
+        for m in n:
+            listafinal = []
+            for k in m:
+                listafinal.append(resolver_general(k, ts, ambito))
+            listainicial.append(listafinal)
+        listaValor.append(listainicial)
+    tamanio1 = resolver_general(instruccion.tamanio1, ts, ambito)
+    tamanio2 = resolver_general(instruccion.tamanio2, ts, ambito)
+    tamanio3 = resolver_general(instruccion.tamanio3, ts, ambito)
+    if(isinstance(tamanio1, int)):
+        if(isinstance(tamanio2, int)): 
+            if(isinstance(tamanio3, int)):
+                if(tamanio1 == len(listaValor)):   
+                    for row in listaValor:
+                        for colum in row:
+                            for valor in colum:
+                                if(isinstance(valor, bool)):
+                                    bandera_bool = True
+                                elif(isinstance(valor, int)):
+                                    bandera_i64 = True
+                                elif(isinstance(valor, float)):
+                                    bandera_f64 = True
+                                elif(isinstance(valor, str)):
+                                    if(len(valor) == 1):
+                                        bandera_char = True
+                                    else:
+                                        bandera_string = True
+                            if(bandera_i64 == True and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == False):
+                                if(TABS.TIPO_DATO.I64 == instruccion.tipo):
+                                    simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+                                    comprobar = ts.comprobar(simbolo)
+                                    if(comprobar):
+                                        ts.actualizar(simbolo)
+                                    else:
+                                        ts.agregar(simbolo)
+                                else:
+                                    mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                                    TABE.agregarError(e)
+                            elif(bandera_i64 == False and bandera_f64 == True and bandera_bool == False and bandera_char == False and bandera_string == False):
+                                if(TABS.TIPO_DATO.F64 == instruccion.tipo):
+                                    simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+                                    comprobar = ts.comprobar(simbolo)
+                                    if(comprobar):
+                                        ts.actualizar(simbolo)
+                                    else:
+                                        ts.agregar(simbolo)
+                                else:
+                                    mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                                    TABE.agregarError(e)
+                            elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == True and bandera_char == False and bandera_string == False):
+                                if(TABS.TIPO_DATO.BOOL == instruccion.tipo):
+                                    simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+                                    comprobar = ts.comprobar(simbolo)
+                                    if(comprobar):
+                                        ts.actualizar(simbolo)
+                                    else:
+                                        ts.agregar(simbolo)
+                                else:
+                                    mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                                    TABE.agregarError(e)
+                            elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == True and bandera_string == False):
+                                if(TABS.TIPO_DATO.CHAR == instruccion.tipo):
+                                    simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+                                    comprobar = ts.comprobar(simbolo)
+                                    if(comprobar):
+                                        ts.actualizar(simbolo)
+                                    else:
+                                        ts.agregar(simbolo)
+                                else:
+                                    mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                                    TABE.agregarError(e)
+                            elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == True):
+                                if(TABS.TIPO_DATO.STRING == instruccion.tipo):
+                                    simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, True, ambito, instruccion.linea, instruccion.columna)
+                                    comprobar = ts.comprobar(simbolo)
+                                    if(comprobar):
+                                        ts.actualizar(simbolo)
+                                    else:
+                                        ts.agregar(simbolo)
+                                else:
+                                    mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                                    TABE.agregarError(e)
+                            else:
+                                mensajeE = "Error semantico: los valores del arreglo no son del mismo tipo \n"
+                                mensaje += mensajeE
+                                e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                                TABE.agregarError(e)
+                else:
+                    mensajeE = "Error semantico: el tamanio del arreglo no coincide \n"
+                    mensaje += mensajeE
+                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                    TABE.agregarError(e)
+            else:
+                mensajeE = "Error semantico: el valor del tamaño debe ser un entero \n"
+                mensaje += mensajeE
+                e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                TABE.agregarError(e)
+        else:
+            mensajeE = "Error semantico: el valor del tamaño debe ser un entero \n"
+            mensaje += mensajeE
+            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+            TABE.agregarError(e)
+    else:
+        mensajeE = "Error semantico: el valor del tamaño debe ser un entero \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_asignacion_arreglo_no_mutable_dimensional_3x3(instruccion, ts, ambito):
+    global mensaje
+    listaValor = []
+    bandera_i64 = False
+    bandera_f64 = False
+    bandera_bool = False
+    bandera_char = False
+    bandera_string = False
+    for n in instruccion.listaexp:
+        listainicial = []
+        for m in n:
+            listafinal = []
+            for k in m:
+                listafinal.append(resolver_general(k, ts, ambito))
+            listainicial.append(listafinal)
+        listaValor.append(listainicial)
+    for row in listaValor:
+        for colum in row:
+            for valor in colum:
+                if(isinstance(valor, bool)):
+                    bandera_bool = True
+                elif(isinstance(valor, int)):
+                    bandera_i64 = True
+                elif(isinstance(valor, float)):
+                    bandera_f64 = True
+                elif(isinstance(valor, str)):
+                    if(len(valor) == 1):
+                        bandera_char = True
+                    else:
+                        bandera_string = True
+    if(bandera_i64 == True and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == True and bandera_bool == False and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == True and bandera_char == False and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == True and bandera_string == False):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == True):
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    else:
+        mensajeE = "Error semantico: los valores del arreglo no son del mismo tipo \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_asignacion_arreglo_no_mutable_tipo_dimensional_3x3(instruccion, ts, ambito):
+    global mensaje
+    listaValor = []
+    bandera_i64 = False
+    bandera_f64 = False
+    bandera_bool = False
+    bandera_char = False
+    bandera_string = False
+    for n in instruccion.listaexp:
+        listainicial = []
+        for m in n:
+            listafinal = []
+            for k in m:
+                listafinal.append(resolver_general(k, ts, ambito))
+            listainicial.append(listafinal)
+        listaValor.append(listainicial)
+    tamanio1 = resolver_general(instruccion.tamanio1, ts, ambito)
+    tamanio2 = resolver_general(instruccion.tamanio2, ts, ambito)
+    tamanio3 = resolver_general(instruccion.tamanio3, ts, ambito)
+    if(isinstance(tamanio1, int)):
+        if(isinstance(tamanio2, int)): 
+            if(isinstance(tamanio3, int)):
+                if(tamanio1 == len(listaValor)):   
+                    for row in listaValor:
+                        for colum in row:
+                            for valor in colum:
+                                if(isinstance(valor, bool)):
+                                    bandera_bool = True
+                                elif(isinstance(valor, int)):
+                                    bandera_i64 = True
+                                elif(isinstance(valor, float)):
+                                    bandera_f64 = True
+                                elif(isinstance(valor, str)):
+                                    if(len(valor) == 1):
+                                        bandera_char = True
+                                    else:
+                                        bandera_string = True
+                            if(bandera_i64 == True and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == False):
+                                if(TABS.TIPO_DATO.I64 == instruccion.tipo):
+                                    simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+                                    comprobar = ts.comprobar(simbolo)
+                                    if(comprobar):
+                                        ts.actualizar(simbolo)
+                                    else:
+                                        ts.agregar(simbolo)
+                                else:
+                                    mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                                    TABE.agregarError(e)
+                            elif(bandera_i64 == False and bandera_f64 == True and bandera_bool == False and bandera_char == False and bandera_string == False):
+                                if(TABS.TIPO_DATO.F64 == instruccion.tipo):
+                                    simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+                                    comprobar = ts.comprobar(simbolo)
+                                    if(comprobar):
+                                        ts.actualizar(simbolo)
+                                    else:
+                                        ts.agregar(simbolo)
+                                else:
+                                    mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                                    TABE.agregarError(e)
+                            elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == True and bandera_char == False and bandera_string == False):
+                                if(TABS.TIPO_DATO.BOOL == instruccion.tipo):
+                                    simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+                                    comprobar = ts.comprobar(simbolo)
+                                    if(comprobar):
+                                        ts.actualizar(simbolo)
+                                    else:
+                                        ts.agregar(simbolo)
+                                else:
+                                    mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                                    TABE.agregarError(e)
+                            elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == True and bandera_string == False):
+                                if(TABS.TIPO_DATO.CHAR == instruccion.tipo):
+                                    simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+                                    comprobar = ts.comprobar(simbolo)
+                                    if(comprobar):
+                                        ts.actualizar(simbolo)
+                                    else:
+                                        ts.agregar(simbolo)
+                                else:
+                                    mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                                    TABE.agregarError(e)
+                            elif(bandera_i64 == False and bandera_f64 == False and bandera_bool == False and bandera_char == False and bandera_string == True):
+                                if(TABS.TIPO_DATO.STRING == instruccion.tipo):
+                                    simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.ARREGLO, listaValor, False, ambito, instruccion.linea, instruccion.columna)
+                                    comprobar = ts.comprobar(simbolo)
+                                    if(comprobar):
+                                        ts.actualizar(simbolo)
+                                    else:
+                                        ts.agregar(simbolo)
+                                else:
+                                    mensajeE = "Error semantico: el tipo no coincide con los valores del arreglo \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                                    TABE.agregarError(e)
+                            else:
+                                mensajeE = "Error semantico: los valores del arreglo no son del mismo tipo \n"
+                                mensaje += mensajeE
+                                e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                                TABE.agregarError(e)
+                else:
+                    mensajeE = "Error semantico: el tamanio del arreglo no coincide \n"
+                    mensaje += mensajeE
+                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                    TABE.agregarError(e)
+            else:
+                mensajeE = "Error semantico: el valor del tamaño debe ser un entero \n"
+                mensaje += mensajeE
+                e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                TABE.agregarError(e)
+        else:
+            mensajeE = "Error semantico: el valor del tamaño debe ser un entero \n"
+            mensaje += mensajeE
+            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+            TABE.agregarError(e)
+    else:
+        mensajeE = "Error semantico: el valor del tamaño debe ser un entero \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_asignacion_nuevo_arreglo_dimensional_3x3(instruccion, ts, ambito):
+    global mensaje
+    existeVar = ts.existeVariable(instruccion.id)
+    if(existeVar):
+        variable = ts.obtener(instruccion.id)
+        variableN = variable
+        posiciona1 = resolver_general(instruccion.posicion1, ts, ambito)
+        posiciona2 = resolver_general(instruccion.posicion2, ts, ambito)
+        posiciona3 = resolver_general(instruccion.posicion3, ts, ambito)
+        if(isinstance(posiciona1, int)):
+            if(isinstance(posiciona2, int)):
+                if(isinstance(posiciona3, int)):
+                    if(variable.mutable == True):
+                        tamanio = len(variableN.valor)
+                        for n in variableN.valor:
+                            tamaniointerior = len(n)
+                            for m in n:
+                                tamanioultimo = len(m)
+                        valornuevo = resolver_general(instruccion.valor, ts, ambito)
+                        if(posiciona1 >= tamanio):
+                            mensajeE = "Error semantico: el rango es mayor que el tamanio del arreglo \n"
+                            mensaje += mensajeE
+                            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                            TABE.agregarError(e)
+                        else:
+                            if(posiciona2 >= tamaniointerior):
+                                mensajeE = "Error semantico: el rango es mayor que el tamanio del arreglo \n"
+                                mensaje += mensajeE
+                                e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                                TABE.agregarError(e)
+                            else:
+                                if(posiciona3 >= tamanioultimo):
+                                    mensajeE = "Error semantico: el rango es mayor que el tamanio del arreglo \n"
+                                    mensaje += mensajeE
+                                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                                    TABE.agregarError(e)
+                                else:
+                                    for valorarreglo in range(tamanio):
+                                        if(posiciona1 == valorarreglo):
+                                            for valorarreglointerior in range(tamaniointerior):
+                                                if(posiciona2 == valorarreglointerior):
+                                                    for valorarregloultimo in range(tamanioultimo):
+                                                        if(posiciona3 == valorarregloultimo):
+                                                            variableN.valor[valorarreglo][valorarreglointerior][valorarregloultimo] = valornuevo
+                                    ts.actualizarValor(variable, variableN.valor)
+                    else:
+                        mensajeE = "Error semantico: el arreglo no es mutable \n"
+                        mensaje += mensajeE
+                        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                        TABE.agregarError(e)
+                else:
+                    mensajeE = "Error semantico: la posicion del arreglo no es un entero \n"
+                    mensaje += mensajeE
+                    e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                    TABE.agregarError(e)
+            else:
+                mensajeE = "Error semantico: la posicion del arreglo no es un entero \n"
+                mensaje += mensajeE
+                e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                TABE.agregarError(e)
+        else:
+            mensajeE = "Error semantico: la posicion del arreglo no es un entero \n"
+            mensaje += mensajeE
+            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+            TABE.agregarError(e)
+    else:
+        mensajeE = "Error semantico: la variable no ha sido declarada \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_asignacion_struct(instruccion, ts, ambito):
+    global mensaje
+    struct = TABS.Struct(instruccion.ids, "", "", 0, 0)
+    comprobar = ts.comprobar_struct(struct)
+    if(comprobar):
+        struct = ts.obtener_struct(instruccion.ids)
+        valor = {}
+        if(len(struct.lista) == len(instruccion.lista)):
+            x = 0
+            for n in instruccion.lista:
+                valor.setdefault(struct.lista[x], resolver_general(n, ts, ambito))
+                x += 1
+        simbolo = TABS.Simbolo(instruccion.id, TABS.TIPO_DATO.LIST, valor, True, ambito, instruccion.linea, instruccion.columna)
+        comprobar = ts.comprobar(simbolo)
+        if(comprobar):
+            ts.actualizar(simbolo)
+        else:
+            ts.agregar(simbolo)
+    else:
+        mensajeE = "Error semantico: el identificador no se encontro \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def instruccion_asignacion_valor_struct(instruccion, ts, ambito):
+    global mensaje
+    simbolo = TABS.Simbolo(instruccion.id1, "", "", "", "", 0, 0)
+    comprobar = ts.comprobar(simbolo)
+    if(comprobar):
+        struct = ts.obtener(instruccion.id1)
+        valor = struct.valor
+        exp = resolver_general(instruccion.exp, ts, ambito)
+        valor[instruccion.id2] = exp
+        simbolon = TABS.Simbolo(instruccion.id1, TABS.TIPO_DATO.LIST, valor, True, ambito, instruccion.linea, instruccion.columna) 
+        ts.actualizar(simbolon)
+    else:
+        mensajeE = "Error semantico: el identificador no se encontro \n"
+        mensaje += mensajeE
+        e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+        TABE.agregarError(e)
+
+def resolver_acceso_struct(instruccion, ts, ambito):
+    global mensaje
+    lista = []
+    for n in instruccion.exp1:
+        if(isinstance(n, ExpresionAccesoStruct)):
+            for i in n.exp1.id:
+                lista.append(i.id)
+        else:
+            lista.append(n.id)
+    simblostruct = TABS.Simbolo(lista[0], "", "", "", "", 0, 0)
+    comprobar = ts.comprobar(simblostruct)
+    if(comprobar):
+        struct = ts.obtener(lista[0])
+        if(type(struct.valor) == dict):
+            aux = struct.valor
+            lista.pop(0)
+            for n in lista:
+                aux = aux[n]
+            return aux
+        else:
+            mensajeE = "Error: El variable "+str(lista[0])+" no es de tipo struct"
+            mensaje += mensajeE
+            e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+            TABE.agregarError(e)
+    else:
+        mensajeE = "Error semantico: el identificador no se encontro \n"
         mensaje += mensajeE
         e = TABE.Error(mensajeE, ambito, 1, 1, datetime.now())
         TABE.agregarError(e)
@@ -1788,6 +2760,32 @@ def procesar_instrucciones(instrucciones, ts, ambito):
             instruccion_insert(instruccion, ts, ambito)
         elif(isinstance(instruccion, Remove)):
             instruccion_remove(instruccion, ts, ambito)
+        elif(isinstance(instruccion, InstruccionStruct)):
+            instruccion_struct(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionStruct)):
+            instruccion_asignacion_struct(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionValorStruct)):
+            instruccion_asignacion_valor_struct(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionArregloMutableDimensional)):
+            instruccion_asignacion_arreglo_mutable_dimensional(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionArregloMutableTipoDimensional)):
+            instruccion_asignacion_arreglo_mutable_tipo_dimensional(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionArregloNoMutableDimensional)):
+            instruccion_asignacion_arreglo_no_mutable_dimensional(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionArregloNoMutableTipoDimensional)):
+            instruccion_asignacion_arreglo_no_mutable_tipo_dimensional(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionNuevoArregloDimensional)):
+            instruccion_asignacion_nuevo_arreglo_dimensional(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionArregloMutableDimensional3x3)):
+            instruccion_asignacion_arreglo_mutable_dimensional_3x3(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionArregloMutableTipoDimensional3x3)):
+            instruccion_asignacion_arreglo_mutable_tipo_dimensional_3x3(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionArregloNoMutableDimensional3x3)):
+            instruccion_asignacion_arreglo_no_mutable_dimensional_3x3(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionArregloNoMutableTipoDimensional3x3)):
+            instruccion_asignacion_arreglo_no_mutable_tipo_dimensional_3x3(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionNuevoArregloDimensional3x3)):
+            instruccion_asignacion_nuevo_arreglo_dimensional_3x3(instruccion, ts, ambito)
         elif(isinstance(instruccion, ExisteBreak)):
             existeBreak = True
         elif(isinstance(instruccion, ExisteContinue)):

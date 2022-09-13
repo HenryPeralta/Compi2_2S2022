@@ -11,6 +11,7 @@ class TIPO_DATO(Enum):
     ARREGLO = 8
     ID = 9
     VEC = 10
+    LIST = 11
     #falta -> Structs
 
 class Simbolo():
@@ -102,7 +103,29 @@ class TablaSimbolos():
 
     def agregar_simbolos_funciones(self, nuevos_simbolos_funciones):
         self.simbolos_funciones[nuevos_simbolos_funciones.id] = nuevos_simbolos_funciones
-        
+
+    #struct
+    def agregar_struct(self, struct):
+        self.structs[struct.id] = struct
+
+    def obtener_struct(self, id):
+        if not id in self.structs:
+            return "Error: variable " + id + " no definida"
+        else:
+            return self.structs[id]
+
+    def comprobar_struct(self, struct):
+        if not struct.id in self.structs:
+            return False
+        return True
+
+    def actualizar_struct(self, struct):
+        if not struct.id in self.structs:
+            print("Error: variable ", struct.id, " no definida")
+            return -1
+        else:
+            self.structs[struct.id] = struct
+
     def GenerarTablaSimbolos(self):
         file = open ("./reportes/tabsimbolos.html", "w")
         file.write("<!DOCTYPE html>\n<html>\n")
@@ -299,6 +322,22 @@ class TablaSimbolos():
             file.write("<td>"+str(self.funcion[n].ambito)+"</td>")
             file.write("<td>"+str(self.funcion[n].linea)+"</td>")
             file.write("<td>"+str(self.funcion[n].columna)+"</td>")
+            file.write("<tr>")
+            contador += 1
+
+        for n in self.structs:
+            lista = ""
+            if(len(self.structs[n].lista) != 0): 
+                for i in self.structs[n].lista:
+                    lista += i + ", "
+            file.write("<tr>")
+            file.write("<td>"+str(contador)+"</td>")
+            file.write("<td>"+self.structs[n].id+"</td>")
+            file.write("<td>"+"Struct"+"</td>")
+            file.write("<td>"+str(lista)+"</td>")
+            file.write("<td>"+str(self.structs[n].ambito)+"</td>")
+            file.write("<td>"+str(self.structs[n].linea)+"</td>")
+            file.write("<td>"+str(self.structs[n].columna)+"</td>")
             file.write("<tr>")
             contador += 1
 

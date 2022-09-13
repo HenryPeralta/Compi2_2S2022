@@ -244,6 +244,8 @@ def p_instruccion(t):
                     | declarar_arreglo
                     | asignacion_arreglo
                     | declarar_vector
+                    | declarar_struct
+                    | asignar_struct
                     | nativa_push
                     | nativa_insert
                     | nativa_remove
@@ -251,6 +253,7 @@ def p_instruccion(t):
                     | main
                     | funcion
                     | llamada_funcion
+                    | struct
                     | return
     '''
     t[0] = t[1]
@@ -330,7 +333,7 @@ def p_fn_nativas_vectores(t):
                   | expresion PUNTO SQRT PARENTIZQ PARENTDER
                   | expresion PUNTO TO_STRING PARENTIZQ PARENTDER
                   | expresion CORCHIZQ expresion CORCHDER
-                  | ID PUNTO REMOVE PARENTIZQ expresion PARENTDER
+                  | expresion PUNTO REMOVE PARENTIZQ expresion PARENTDER 
     '''
     if(t[3] == "len"):
         t[0] = ExpresionFnLen(t[1], FUNCIONES_NATIVAS_VECTORES.LEN)
@@ -495,11 +498,20 @@ def p_parametro_tipo(t):
     '''
         parametro : ID DOSPUNTOS tipo
                   | ID DOSPUNTOS AMPERSAND MUT CORCHIZQ tipo CORCHDER
+                  | ID DOSPUNTOS AMPERSAND MUT CORCHIZQ tipo PUNTOYCOMA expresion CORCHDER
+                  | ID DOSPUNTOS AMPERSAND MUT CORCHIZQ CORCHIZQ tipo PUNTOYCOMA expresion CORCHDER PUNTOYCOMA expresion CORCHDER
+                  | ID DOSPUNTOS AMPERSAND MUT CORCHIZQ CORCHIZQ CORCHIZQ tipo PUNTOYCOMA expresion CORCHDER PUNTOYCOMA expresion CORCHDER PUNTOYCOMA expresion CORCHDER
                   | ID DOSPUNTOS AMPERSAND MUT VEC MENOR tipo MAYOR
     '''
     if(t[3] == "&"):
         if(t[5] == "["):
-            t[0] = ExpresionParametro(t[1], t[6])
+            if(t[6] == "["):
+                if(t[7] == "["):
+                    t[0] = ExpresionParametro(t[1], t[8])
+                else:
+                    t[0] = ExpresionParametro(t[1], t[7])
+            else:
+                t[0] = ExpresionParametro(t[1], t[6])
         else:
             t[0] = ExpresionParametro(t[1], t[7])
     else:    
@@ -741,6 +753,31 @@ def p_declaracion_vector_vacio_no_mutable(t):
     elif(t[6] == "usize"):
         t[0] = AsignacionVectorVacioNoMutable(t[2], TIPO_DATO.USIZE, t.slice[1].lineno, 1)
 
+def p_struct(t):
+    '''
+        struct : STRUCT ID LLAVEIZQ lista_structs LLAVEDER
+    '''
+    t[0] = InstruccionStruct(t[2], t[4], t.slice[1].lineno, 1)
+
+def p_lista_structs(t):
+    '''
+        lista_structs : lista_structs COMA lista_struct
+    '''
+    t[1].append(t[3])
+    t[0] = t[1]
+
+def p_lista_struct(t):
+    '''
+        lista_structs : lista_struct
+    '''
+    t[0] = [t[1]]
+
+def p_valores_struct(t):
+    '''
+        lista_struct : ID DOSPUNTOS tipo
+    '''
+    t[0] = t[1]
+
 def p_fnativa_push(t):
     '''
         nativa_push : ID PUNTO PUSH PARENTIZQ expresion PARENTDER PUNTOYCOMA
@@ -832,11 +869,208 @@ def p_valor_parametro(t):
     '''
     t[0] = t[1]
 
-def p_asignacion_arreglo_1x1(t):
+def p_asignacion_arreglo_1x1_mutable(t):
     '''
         asignacion_arreglo : ID CORCHIZQ expresion CORCHDER IGUAL expresion PUNTOYCOMA
     '''
     t[0] = AsignacionNuevoArreglo(t[1], t[3], t[6], t.slice[1].lineno, 1)
+
+def p_asignacion_arreglo_2x2_mutable(t):
+    '''
+        asignacion_arreglo : ID CORCHIZQ expresion CORCHDER CORCHIZQ expresion CORCHDER IGUAL expresion PUNTOYCOMA
+    '''
+    t[0] = AsignacionNuevoArregloDimensional(t[1], t[3], t[6], t[9], t.slice[1].lineno, 1)
+
+def p_declaracion_arreglo_mutable_2x2(t):
+    '''
+        declarar_arreglo : LET MUT ID IGUAL CORCHIZQ lista_arrgeglo_mas_dim CORCHDER PUNTOYCOMA
+    '''
+    t[0] = AsignacionArregloMutableDimensional(t[3], t[6], t.slice[1].lineno, 1)
+
+def p_declaracion_arreglo_mutable_tipo_2x2(t):
+    '''
+        declarar_arreglo : LET MUT ID DOSPUNTOS CORCHIZQ CORCHIZQ tipo PUNTOYCOMA expresion CORCHDER PUNTOYCOMA expresion CORCHDER IGUAL CORCHIZQ lista_arrgeglo_mas_dim CORCHDER PUNTOYCOMA
+    '''
+    if(t[7] == "i64"):
+        t[0] = AsignacionArregloMutableTipoDimensional(t[3], t[16], TIPO_DATO.I64, t[12], t[9], t.slice[1].lineno, 1)
+    elif(t[7] == "f64"):
+        t[0] = AsignacionArregloMutableTipoDimensional(t[3], t[16], TIPO_DATO.F64, t[12], t[9], t.slice[1].lineno, 1)
+    elif(t[7] == "bool"):
+        t[0] = AsignacionArregloMutableTipoDimensional(t[3], t[16], TIPO_DATO.BOOL, t[12], t[9], t.slice[1].lineno, 1)
+    elif(t[7] == "char"):
+        t[0] = AsignacionArregloMutableTipoDimensional(t[3], t[16], TIPO_DATO.CHAR, t[12], t[9], t.slice[1].lineno, 1)
+    elif(t[7] == "String"):
+        t[0] = AsignacionArregloMutableTipoDimensional(t[3], t[16], TIPO_DATO.STRING, t[12], t[9], t.slice[1].lineno, 1)
+    elif(t[7] == "str"):
+        t[0] = AsignacionArregloMutableTipoDimensional(t[3], t[16], TIPO_DATO.STR, t[12], t[9], t.slice[1].lineno, 1)
+    elif(t[7] == "usize"):
+        t[0] = AsignacionArregloMutableTipoDimensional(t[3], t[16], TIPO_DATO.USIZE, t[12], t[9], t.slice[1].lineno, 1)
+    else:
+        t[0] = AsignacionArregloMutableTipoDimensional(t[3], t[16], TIPO_DATO.ID, t[12], t[9], t.slice[1].lineno, 1)
+
+def p_declaracion_arreglo_no_mutable_2x2(t):
+    '''
+        declarar_arreglo : LET ID IGUAL CORCHIZQ lista_arrgeglo_mas_dim CORCHDER PUNTOYCOMA
+    '''
+    t[0] = AsignacionArregloNoMutableDimensional(t[2], t[5], t.slice[1].lineno, 1)
+
+def p_declaracion_arreglo_no_mutable_tipo_2x2(t):
+    '''
+        declarar_arreglo : LET ID DOSPUNTOS CORCHIZQ CORCHIZQ tipo PUNTOYCOMA expresion CORCHDER PUNTOYCOMA expresion CORCHDER IGUAL CORCHIZQ lista_arrgeglo_mas_dim CORCHDER PUNTOYCOMA
+    '''
+    if(t[6] == "i64"):
+        t[0] = AsignacionArregloNoMutableTipoDimensional(t[2], t[15], TIPO_DATO.I64, t[11], t[8], t.slice[1].lineno, 1)
+    elif(t[6] == "f64"):
+        t[0] = AsignacionArregloNoMutableTipoDimensional(t[2], t[15], TIPO_DATO.F64, t[11], t[8], t.slice[1].lineno, 1)
+    elif(t[6] == "bool"):
+        t[0] = AsignacionArregloNoMutableTipoDimensional(t[2], t[15], TIPO_DATO.BOOL, t[11], t[8], t.slice[1].lineno, 1)
+    elif(t[6] == "char"):
+        t[0] = AsignacionArregloNoMutableTipoDimensional(t[2], t[15], TIPO_DATO.CHAR, t[11], t[8], t.slice[1].lineno, 1)
+    elif(t[6] == "String"):
+        t[0] = AsignacionArregloNoMutableTipoDimensional(t[2], t[15], TIPO_DATO.STRING, t[11], t[8], t.slice[1].lineno, 1)
+    elif(t[6] == "str"):
+        t[0] = AsignacionArregloNoMutableTipoDimensional(t[2], t[15], TIPO_DATO.STR, t[11], t[8], t.slice[1].lineno, 1)
+    elif(t[6] == "usize"):
+        t[0] = AsignacionArregloNoMutableTipoDimensional(t[2], t[15], TIPO_DATO.USIZE, t[11], t[8], t.slice[1].lineno, 1)
+    else:
+        t[0] = AsignacionArregloNoMutableTipoDimensional(t[2], t[15], TIPO_DATO.ID, t[11], t[8], t.slice[1].lineno, 1)
+
+def p_lista_arrgeglo_mas_dim(t):
+    '''
+        lista_arrgeglo_mas_dim : lista_arrgeglo_mas_dim COMA valor_arrgeglo_mas_dim
+    '''
+    t[1].append(t[3])
+    t[0] = t[1]
+
+def p_arreglo_mas_dim(t):
+    '''
+        lista_arrgeglo_mas_dim : valor_arrgeglo_mas_dim
+    '''
+    t[0] = [t[1]]
+
+def p_valor_arrgeglo_mas_dim(t):
+    '''
+        valor_arrgeglo_mas_dim : CORCHIZQ llamada_parametros CORCHDER
+    '''
+    t[0] = t[2]
+
+def p_asignacion_arreglo_3x3_mutable(t):
+    '''
+        asignacion_arreglo : ID CORCHIZQ expresion CORCHDER CORCHIZQ expresion CORCHDER CORCHIZQ expresion CORCHDER IGUAL expresion PUNTOYCOMA
+    '''
+    t[0] = AsignacionNuevoArregloDimensional3x3(t[1], t[3], t[6], t[9], t[12], t.slice[1].lineno, 1)
+
+def p_declaracion_arreglo_mutable_3x3(t):
+    '''
+        declarar_arreglo : LET MUT ID IGUAL CORCHIZQ lista_arrgeglo_dimensional_tres CORCHDER PUNTOYCOMA
+    '''
+    t[0] = AsignacionArregloMutableDimensional3x3(t[3], t[6], t.slice[1].lineno, 1)
+
+def p_declaracion_arreglo_mutable_tipo_3x3(t):
+    '''
+        declarar_arreglo : LET MUT ID DOSPUNTOS CORCHIZQ CORCHIZQ CORCHIZQ tipo PUNTOYCOMA expresion CORCHDER PUNTOYCOMA expresion CORCHDER PUNTOYCOMA expresion CORCHDER IGUAL CORCHIZQ lista_arrgeglo_dimensional_tres CORCHDER PUNTOYCOMA
+    '''
+    if(t[8] == "i64"):
+        t[0] = AsignacionArregloMutableTipoDimensional3x3(t[3], t[20], TIPO_DATO.I64, t[16], t[13], t[10], t.slice[1].lineno, 1)
+    elif(t[8] == "f64"):
+        t[0] = AsignacionArregloMutableTipoDimensional3x3(t[3], t[20], TIPO_DATO.F64, t[16], t[13], t[10], t.slice[1].lineno, 1)
+    elif(t[8] == "bool"):
+        t[0] = AsignacionArregloMutableTipoDimensional3x3(t[3], t[20], TIPO_DATO.BOOL, t[16], t[13], t[10], t.slice[1].lineno, 1)
+    elif(t[8] == "char"):
+        t[0] = AsignacionArregloMutableTipoDimensional3x3(t[3], t[20], TIPO_DATO.CHAR, t[16], t[13], t[10], t.slice[1].lineno, 1)
+    elif(t[8] == "String"):
+        t[0] = AsignacionArregloMutableTipoDimensional3x3(t[3], t[20], TIPO_DATO.STRING, t[16], t[13], t[10], t.slice[1].lineno, 1)
+    elif(t[8] == "str"):
+        t[0] = AsignacionArregloMutableTipoDimensional3x3(t[3], t[20], TIPO_DATO.STR, t[16], t[13], t[10], t.slice[1].lineno, 1)
+    elif(t[8] == "usize"):
+        t[0] = AsignacionArregloMutableTipoDimensional3x3(t[3], t[20], TIPO_DATO.USIZE, t[16], t[13], t[10], t.slice[1].lineno, 1)
+    else:
+        t[0] = AsignacionArregloMutableTipoDimensional3x3(t[3], t[20], TIPO_DATO.ID, t[16], t[13], t[10], t.slice[1].lineno, 1)
+
+def p_declaracion_arreglo_no_mutable_3x3(t):
+    '''
+        declarar_arreglo : LET ID IGUAL CORCHIZQ lista_arrgeglo_dimensional_tres CORCHDER PUNTOYCOMA
+    '''
+    t[0] = AsignacionArregloNoMutableDimensional3x3(t[2], t[5], t.slice[1].lineno, 1)
+
+def p_declaracion_arreglo_no_mutable_tipo_3x3(t):
+    '''
+        declarar_arreglo : LET ID DOSPUNTOS CORCHIZQ CORCHIZQ CORCHIZQ tipo PUNTOYCOMA expresion CORCHDER PUNTOYCOMA expresion CORCHDER PUNTOYCOMA expresion CORCHDER IGUAL CORCHIZQ lista_arrgeglo_dimensional_tres CORCHDER PUNTOYCOMA
+    '''
+    if(t[7] == "i64"):
+        t[0] = AsignacionArregloNoMutableTipoDimensional3x3(t[2], t[19], TIPO_DATO.I64, t[15], t[12], t[9], t.slice[1].lineno, 1)
+    elif(t[7] == "f64"):
+        t[0] = AsignacionArregloNoMutableTipoDimensional3x3(t[2], t[19], TIPO_DATO.F64, t[15], t[12], t[9], t.slice[1].lineno, 1)
+    elif(t[7] == "bool"):
+        t[0] = AsignacionArregloNoMutableTipoDimensional3x3(t[2], t[19], TIPO_DATO.BOOL, t[15], t[12], t[9], t.slice[1].lineno, 1)
+    elif(t[7] == "char"):
+        t[0] = AsignacionArregloNoMutableTipoDimensional3x3(t[2], t[19], TIPO_DATO.CHAR, t[15], t[12], t[9], t.slice[1].lineno, 1)
+    elif(t[7] == "String"):
+        t[0] = AsignacionArregloNoMutableTipoDimensional3x3(t[2], t[19], TIPO_DATO.STRING, t[15], t[12], t[9], t.slice[1].lineno, 1)
+    elif(t[7] == "str"):
+        t[0] = AsignacionArregloNoMutableTipoDimensional3x3(t[2], t[19], TIPO_DATO.STR, t[15], t[12], t[9], t.slice[1].lineno, 1)
+    elif(t[7] == "usize"):
+        t[0] = AsignacionArregloNoMutableTipoDimensional3x3(t[2], t[19], TIPO_DATO.USIZE, t[15], t[12], t[9], t.slice[1].lineno, 1)
+    else:
+        t[0] = AsignacionArregloNoMutableTipoDimensional3x3(t[2], t[19], TIPO_DATO.ID, t[15], t[12], t[9], t.slice[1].lineno, 1)
+
+def p_lista_arreglo_dimensional_3x3(t):
+    '''
+        lista_arrgeglo_dimensional_tres : lista_arrgeglo_dimensional_tres COMA valor_arrgeglo_dimensional_tres
+    '''
+    t[1].append(t[3])
+    t[0] = t[1]
+
+def p_arreglo_dimensional_3x3(t):
+    '''
+        lista_arrgeglo_dimensional_tres : valor_arrgeglo_dimensional_tres
+    '''
+    t[0] = [t[1]]
+
+def p_valor_dimensional_3x3(t):
+    '''
+        valor_arrgeglo_dimensional_tres : CORCHIZQ lista_arrgeglo_mas_dim CORCHDER
+    '''
+    t[0] = t[2]
+
+def p_declarar_struct_mutable(t):
+    '''
+        declarar_struct : LET MUT ID IGUAL ID LLAVEIZQ dec_lista_structs LLAVEDER PUNTOYCOMA 
+    '''
+    t[0] = AsignacionStruct(t[3], t[5], t[7], t.slice[1].lineno, 1)
+
+def p_dec_lista_structs(t):
+    '''
+        dec_lista_structs : dec_lista_structs COMA dec_valores_struct
+    '''
+    t[1].append(t[3])
+    t[0] = t[1]
+
+def p_dec_lista_struct(t):
+    '''
+        dec_lista_structs : dec_valores_struct
+    '''
+    t[0] = [t[1]]
+
+def p_dec_valores_struct(t):
+    '''
+        dec_valores_struct : ID DOSPUNTOS expresion
+    '''
+    t[0] = t[3]
+
+def p_asignacion_valor_struct(t):
+    '''
+        asignar_struct : ID PUNTO ID IGUAL expresion PUNTOYCOMA 
+    '''
+    t[0] = AsignacionValorStruct(t[1], t[3], t[5], t.slice[1].lineno, 1)
+
+def p_expresion_acceso_struct(t):
+    '''
+        expresion : expresion PUNTO expresion
+    '''
+    #t[1] = ExpresionIdentificador(t[1])
+    #t[3] = ExpresionIdentificador(t[3])
+    t[0] = ExpresionAccesoStruct([t[1], t[3]])
 
 def p_expresion_numero(t):
     '''

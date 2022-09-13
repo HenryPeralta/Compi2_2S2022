@@ -115,3 +115,7 @@ class ExpresionToString():
     def __init__(self, exp, tipo):
         self.exp = exp
         self.tipo = tipo
+
+class ExpresionAccesoStruct():
+    def __init__(self, exp1):
+        self.exp1 = exp1

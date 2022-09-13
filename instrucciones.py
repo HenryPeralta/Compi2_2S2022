@@ -250,3 +250,115 @@ class Contains(Instruccion):
     def __init__(self, id, exp):
         self.id = id
         self.exp = exp
+
+class InstruccionStruct(Instruccion):
+    def __init__(self, id, lista, linea, columna):
+        self.id = id
+        self.lista = lista
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionArregloMutableDimensional(Instruccion):
+    def __init__(self, id, listaexp, linea, columna):
+        self.id = id
+        self.listaexp = listaexp
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionArregloMutableTipoDimensional(Instruccion):
+    def __init__(self, id, listaexp, tipo, tamanio1, tamanio2, linea, columna):
+        self.id = id
+        self.listaexp = listaexp
+        self.tipo = tipo
+        self.tamanio1 = tamanio1
+        self.tamanio2 = tamanio2
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionArregloNoMutableDimensional(Instruccion):
+    def __init__(self, id, listaexp, linea, columna):
+        self.id = id
+        self.listaexp = listaexp
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionArregloNoMutableTipoDimensional(Instruccion):
+    def __init__(self, id, listaexp, tipo, tamanio1, tamanio2, linea, columna):
+        self.id = id
+        self.listaexp = listaexp
+        self.tipo = tipo
+        self.tamanio1 = tamanio1
+        self.tamanio2 = tamanio2
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionNuevoArregloDimensional(Instruccion):
+    def __init__(self, id, posicion1, posicion2, valor, linea, columna):
+        self.id = id
+        self.posicion1 = posicion1
+        self.posicion2 = posicion2
+        self.valor = valor
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionArregloMutableDimensional3x3(Instruccion):
+    def __init__(self, id, listaexp, linea, columna):
+        self.id = id
+        self.listaexp = listaexp
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionArregloMutableTipoDimensional3x3(Instruccion):
+    def __init__(self, id, listaexp, tipo, tamanio1, tamanio2, tamanio3, linea, columna):
+        self.id = id
+        self.listaexp = listaexp
+        self.tipo = tipo
+        self.tamanio1 = tamanio1
+        self.tamanio2 = tamanio2
+        self.tamanio3 = tamanio3
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionArregloNoMutableDimensional3x3(Instruccion):
+    def __init__(self, id, listaexp, linea, columna):
+        self.id = id
+        self.listaexp = listaexp
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionArregloNoMutableTipoDimensional3x3(Instruccion):
+    def __init__(self, id, listaexp, tipo, tamanio1, tamanio2, tamanio3, linea, columna):
+        self.id = id
+        self.listaexp = listaexp
+        self.tipo = tipo
+        self.tamanio1 = tamanio1
+        self.tamanio2 = tamanio2
+        self.tamanio3 = tamanio3
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionNuevoArregloDimensional3x3(Instruccion):
+    def __init__(self, id, posicion1, posicion2, posicion3, valor, linea, columna):
+        self.id = id
+        self.posicion1 = posicion1
+        self.posicion2 = posicion2
+        self.posicion3 = posicion3
+        self.valor = valor
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionStruct(Instruccion):
+    def __init__(self, id, ids, lista, linea, columna):
+        self.id = id
+        self.ids = ids
+        self.lista = lista
+        self.linea = linea
+        self.columna = columna
+
+class AsignacionValorStruct(Instruccion):
+    def __init__(self, id1, id2, exp, linea, columna):
+        self.id1 = id1
+        self.id2 = id2
+        self.exp = exp
+        self.linea = linea
+        self.columna = columna
