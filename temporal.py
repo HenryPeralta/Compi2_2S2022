@@ -58,7 +58,7 @@ class Temporales:
             self.tablaSimbolos[simbolo] = nuevoSi
 
 class tipoSimbolo():
-    def __init__(self, temp, nombre, tam, pos, rol, ambito, tipo):
+    def __init__(self, temp, nombre, tam, pos, rol, ambito, tipo, mutable):
         self.temp = temp
         self.nombre = nombre
         self.tam = tam
@@ -66,3 +66,4 @@ class tipoSimbolo():
         self.rol = rol
         self.ambito = ambito
         self.tipo = tipo
+        self.mutable = mutable
