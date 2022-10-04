@@ -1,3 +1,4 @@
+from re import TEMPLATE
 import tab_simbolos as TABS
 import gramatica as g
 from expresiones import  *
@@ -635,7 +636,7 @@ def resolver_relacional(expRel, ts, ambito):
             for n in Ltrue2:
                 ListaV.append(n)
         else:
-            ListaV.append(n)
+            ListaV.append(Ltrue2)
         if(type(Ltrue1) == list):
             for n in Ltrue1:
                 ListaV.append(n)
@@ -859,15 +860,15 @@ def instruccion_asignacion_mut(asignacion, ts, ambito):
                 cadena += "\t " + n + ": \n"
                 fila += 1
         cadena += "\t " + newT + " = H; \n"
-        cadena += "\t heap[(int)H] = 116;"
+        cadena += "\t heap[(int)H] = 116; \n"
         cadena += "\t H = H + 1; \n"
-        cadena += "\t heap[(int)H] = 114;"
+        cadena += "\t heap[(int)H] = 114; \n"
         cadena += "\t H = H + 1; \n"
-        cadena += "\t heap[(int)H] = 117;"
+        cadena += "\t heap[(int)H] = 117; \n"
         cadena += "\t H = H + 1; \n"
-        cadena += "\t heap[(int)H] = 101;"
+        cadena += "\t heap[(int)H] = 101; \n"
         cadena += "\t H = H + 1; \n"
-        cadena += "\t heap[(int)H] = -1;"
+        cadena += "\t heap[(int)H] = -1; \n"
         cadena += "\t H = H + 1; \n"
         fila += 11
         if(type(LF) != list):
@@ -878,17 +879,17 @@ def instruccion_asignacion_mut(asignacion, ts, ambito):
                 cadena += "\t " + n + ": \n"
                 fila += 1
         cadena += "\t " + newT + " = H; \n"
-        cadena += "\t heap[(int)H] = 102;"
+        cadena += "\t heap[(int)H] = 102; \n"
         cadena += "\t H = H + 1; \n"
-        cadena += "\t heap[(int)H] = 97;"
+        cadena += "\t heap[(int)H] = 97; \n"
         cadena += "\t H = H + 1; \n"
-        cadena += "\t heap[(int)H] = 108;"
+        cadena += "\t heap[(int)H] = 108; \n"
         cadena += "\t H = H + 1; \n"
-        cadena += "\t heap[(int)H] = 115;"
+        cadena += "\t heap[(int)H] = 115; \n"
         cadena += "\t H = H + 1; \n"
-        cadena += "\t heap[(int)H] = 101;"
+        cadena += "\t heap[(int)H] = 101; \n"
         cadena += "\t H = H + 1; \n"
-        cadena += "\t heap[(int)H] = -1;"
+        cadena += "\t heap[(int)H] = -1; \n"
         cadena += "\t H = H + 1; \n"
         fila += 13
         variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, TABS.TIPO_DATO.STRING, True)
@@ -933,8 +934,9 @@ def instruccion_asignacion_mut(asignacion, ts, ambito):
                     if(len(tmp) == 1):
                         cadena += "\t " + valorT + " = " + str(ord(tmp)) + "; \n"
                         fila += 1
-                    cadena += "\t " + valorT + " = " + str(tmp) + "; \n"
-                    fila += 1
+                    else:
+                        cadena += "\t " + valorT + " = " + str(tmp) + "; \n"
+                        fila += 1
                 else:
                     cadena += "\t " + valorT + " = " + str(tmp) + "; \n"
                     fila += 1
@@ -975,6 +977,538 @@ def instruccion_asignacion_mut(asignacion, ts, ambito):
                 t_global.agregarSimbolo(variable)
     return cadena
 
+def instruccion_asignacion_mut_tipo(asignacion, ts, ambito):
+    global t_global, fila, ListaAsignacion, ListaAsignacion2
+    cadena = ""
+    if(isinstance(asignacion.exp, ExpresionRelacional)):
+        newT = t_global.varTemporal()
+        LV, LF, c3d = resolver_general(asignacion.exp, ts, ambito)
+        cadena += c3d
+        if(type(LV) != list):
+            cadena += "\t " + LV + ": \n"
+            fila += 1
+        else:
+            for n in LV:
+                cadena += "\t " + n + ": \n"
+                fila += 1
+        cadena += "\t " + newT + " = H; \n"
+        cadena += "\t heap[(int)H] = 116; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 114; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 117; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 101; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = -1; \n"
+        cadena += "\t H = H + 1; \n"
+        fila += 11
+        if(type(LF) != list):
+            cadena += "\t " + LF + ": \n"
+            fila += 1
+        else:
+            for n in LF:
+                cadena += "\t " + n + ": \n"
+                fila += 1
+        cadena += "\t " + newT + " = H; \n"
+        cadena += "\t heap[(int)H] = 102; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 97; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 108; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 115; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 101; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = -1; \n"
+        cadena += "\t H = H + 1; \n"
+        fila += 13
+        variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, TABS.TIPO_DATO.STRING, True)
+        t_global.agregarSimbolo(variable)
+    else:
+        comprobar = False
+        valorT = ""
+        valorR = ""
+        pos = ""
+        tmp, c3d = resolver_general(asignacion.exp, ts, ambito)
+        for var in t_global.tablaSimbolos:
+            tipo = t_global.obtenerSimbolo(var)
+            if(tipo.nombre == asignacion.id):
+                valorT = tipo.temp
+                valorR = tipo.rol
+                pos = tipo.pos
+                comprobar = True
+        if(comprobar):
+            cadena += c3d
+            if(valorR == "PAR"):
+                newT = t_global.varTemporal()
+                cadena += "\t " + newT + " = P +" + pos + "; \n"
+                cadena += "\t stack[(int)" + newT + "] = " + str(tmp) + "; \n"
+                fila += 2
+            else:
+                newT = t_global.varTemporal()
+                listaAux = []
+                for n in ListaAsignacion:
+                    if(n.id != valorT):
+                        listaAux.append(n)
+                ListaAsignacion = listaAux
+
+                listaAux = []
+                for n in ListaAsignacion2:
+                    if(n.id != valorT):
+                        listaAux.append(n)
+                ListaAsignacion2 = listaAux
+
+                #Falta Optimizacion de 1244 a 1245
+
+                if(isinstance(tmp, str)):
+                    if(len(tmp) == 1):
+                        cadena += "\t " + valorT + " = " + str(ord(tmp)) + "; \n"
+                        fila += 1
+                    else:
+                        cadena += "\t " + valorT + " = " + str(tmp) + "; \n"
+                        fila += 1
+                else:
+                    cadena += "\t " + valorT + " = " + str(tmp) + "; \n"
+                    fila += 1
+        else:
+            newT = t_global.varTemporal()
+            print("-----" + newT + "------")
+            if(isinstance(asignacion.exp, ExpresionDobleComilla)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, TABS.TIPO_DATO.STRING, True)
+
+                #Falta Optimizacion de 1257 a 1259
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+            elif(isinstance(asignacion.exp, ExpresionNumero)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, TABS.TIPO_DATO.I64, True)
+                                
+                #Falta Optimizacion de 1268 a 1270
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+            elif(isinstance(asignacion.exp, ExpresionCaracter)):
+                cadena += c3d + "\t " + newT + " = " + str(ord(tmp)) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, TABS.TIPO_DATO.CHAR, True)
+
+                #Falta Optimizacion de 1257 a 1259
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+            else:
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, "", True)
+                                
+                #Falta Optimizacion de 1279 a 1281
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+    return cadena
+
+def instruccion_asignacion_no_mut(asignacion, ts, ambito):
+    global t_global, fila, ListaAsignacion, ListaAsignacion2
+    cadena = ""
+    if(isinstance(asignacion.exp, ExpresionRelacional)):
+        newT = t_global.varTemporal()
+        LV, LF, c3d = resolver_general(asignacion.exp, ts, ambito)
+        cadena += c3d
+        if(type(LV) != list):
+            cadena += "\t " + LV + ": \n"
+            fila += 1
+        else:
+            for n in LV:
+                cadena += "\t " + n + ": \n"
+                fila += 1
+        cadena += "\t " + newT + " = H; \n"
+        cadena += "\t heap[(int)H] = 116; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 114; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 117; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 101; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = -1; \n"
+        cadena += "\t H = H + 1; \n"
+        fila += 11
+        if(type(LF) != list):
+            cadena += "\t " + LF + ": \n"
+            fila += 1
+        else:
+            for n in LF:
+                cadena += "\t " + n + ": \n"
+                fila += 1
+        cadena += "\t " + newT + " = H; \n"
+        cadena += "\t heap[(int)H] = 102; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 97; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 108; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 115; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 101; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = -1; \n"
+        cadena += "\t H = H + 1; \n"
+        fila += 13
+        variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, TABS.TIPO_DATO.STRING, False)
+        t_global.agregarSimbolo(variable)
+    else:
+        comprobar = False
+        valorT = ""
+        valorR = ""
+        pos = ""
+        tmp, c3d = resolver_general(asignacion.exp, ts, ambito)
+        for var in t_global.tablaSimbolos:
+            tipo = t_global.obtenerSimbolo(var)
+            if(tipo.nombre == asignacion.id):
+                valorT = tipo.temp
+                valorR = tipo.rol
+                pos = tipo.pos
+                comprobar = True
+        if(comprobar):
+            cadena += c3d
+            if(valorR == "PAR"):
+                newT = t_global.varTemporal()
+                cadena += "\t " + newT + " = P +" + pos + "; \n"
+                cadena += "\t stack[(int)" + newT + "] = " + str(tmp) + "; \n"
+                fila += 2
+            else:
+                newT = t_global.varTemporal()
+                listaAux = []
+                for n in ListaAsignacion:
+                    if(n.id != valorT):
+                        listaAux.append(n)
+                ListaAsignacion = listaAux
+
+                listaAux = []
+                for n in ListaAsignacion2:
+                    if(n.id != valorT):
+                        listaAux.append(n)
+                ListaAsignacion2 = listaAux
+
+                #Falta Optimizacion de 1244 a 1245
+
+                if(isinstance(tmp, str)):
+                    if(len(tmp) == 1):
+                        cadena += "\t " + valorT + " = " + str(ord(tmp)) + "; \n"
+                        fila += 1
+                    else:
+                        cadena += "\t " + valorT + " = " + str(tmp) + "; \n"
+                        fila += 1
+                else:
+                    cadena += "\t " + valorT + " = " + str(tmp) + "; \n"
+                    fila += 1
+        else:
+            newT = t_global.varTemporal()
+            print("-----" + newT + "------")
+            if(isinstance(asignacion.exp, ExpresionDobleComilla)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, TABS.TIPO_DATO.STRING, False)
+
+                #Falta Optimizacion de 1257 a 1259
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+            elif(isinstance(asignacion.exp, ExpresionNumero)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, TABS.TIPO_DATO.I64, False)
+                                
+                #Falta Optimizacion de 1268 a 1270
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+            elif(isinstance(asignacion.exp, ExpresionCaracter)):
+                cadena += c3d + "\t " + newT + " = " + str(ord(tmp)) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, TABS.TIPO_DATO.CHAR, False)
+
+                #Falta Optimizacion de 1257 a 1259
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+            else:
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, "", False)
+                                
+                #Falta Optimizacion de 1279 a 1281
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+    return cadena
+
+def instruccion_asignacion_no_mut_tipo(asignacion, ts, ambito):
+    global t_global, fila, ListaAsignacion, ListaAsignacion2
+    cadena = ""
+    if(isinstance(asignacion.exp, ExpresionRelacional)):
+        newT = t_global.varTemporal()
+        LV, LF, c3d = resolver_general(asignacion.exp, ts, ambito)
+        cadena += c3d
+        if(type(LV) != list):
+            cadena += "\t " + LV + ": \n"
+            fila += 1
+        else:
+            for n in LV:
+                cadena += "\t " + n + ": \n"
+                fila += 1
+        cadena += "\t " + newT + " = H; \n"
+        cadena += "\t heap[(int)H] = 116; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 114; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 117; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 101; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = -1; \n"
+        cadena += "\t H = H + 1; \n"
+        fila += 11
+        if(type(LF) != list):
+            cadena += "\t " + LF + ": \n"
+            fila += 1
+        else:
+            for n in LF:
+                cadena += "\t " + n + ": \n"
+                fila += 1
+        cadena += "\t " + newT + " = H; \n"
+        cadena += "\t heap[(int)H] = 102; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 97; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 108; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 115; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 101; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = -1; \n"
+        cadena += "\t H = H + 1; \n"
+        fila += 13
+        variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, TABS.TIPO_DATO.STRING, False)
+        t_global.agregarSimbolo(variable)
+    else:
+        comprobar = False
+        valorT = ""
+        valorR = ""
+        pos = ""
+        tmp, c3d = resolver_general(asignacion.exp, ts, ambito)
+        for var in t_global.tablaSimbolos:
+            tipo = t_global.obtenerSimbolo(var)
+            if(tipo.nombre == asignacion.id):
+                valorT = tipo.temp
+                valorR = tipo.rol
+                pos = tipo.pos
+                comprobar = True
+        if(comprobar):
+            cadena += c3d
+            if(valorR == "PAR"):
+                newT = t_global.varTemporal()
+                cadena += "\t " + newT + " = P +" + pos + "; \n"
+                cadena += "\t stack[(int)" + newT + "] = " + str(tmp) + "; \n"
+                fila += 2
+            else:
+                newT = t_global.varTemporal()
+                listaAux = []
+                for n in ListaAsignacion:
+                    if(n.id != valorT):
+                        listaAux.append(n)
+                ListaAsignacion = listaAux
+
+                listaAux = []
+                for n in ListaAsignacion2:
+                    if(n.id != valorT):
+                        listaAux.append(n)
+                ListaAsignacion2 = listaAux
+
+                #Falta Optimizacion de 1244 a 1245
+
+                if(isinstance(tmp, str)):
+                    if(len(tmp) == 1):
+                        cadena += "\t " + valorT + " = " + str(ord(tmp)) + "; \n"
+                        fila += 1
+                    else:
+                        cadena += "\t " + valorT + " = " + str(tmp) + "; \n"
+                        fila += 1
+                else:
+                    cadena += "\t " + valorT + " = " + str(tmp) + "; \n"
+                    fila += 1
+        else:
+            newT = t_global.varTemporal()
+            print("-----" + newT + "------")
+            if(isinstance(asignacion.exp, ExpresionDobleComilla)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, TABS.TIPO_DATO.STRING, False)
+
+                #Falta Optimizacion de 1257 a 1259
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+            elif(isinstance(asignacion.exp, ExpresionNumero)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, TABS.TIPO_DATO.I64, False)
+                                
+                #Falta Optimizacion de 1268 a 1270
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+            elif(isinstance(asignacion.exp, ExpresionCaracter)):
+                cadena += c3d + "\t " + newT + " = " + str(ord(tmp)) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, TABS.TIPO_DATO.CHAR, False)
+
+                #Falta Optimizacion de 1257 a 1259
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+            else:
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, "", False)
+                                
+                #Falta Optimizacion de 1279 a 1281
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+    return cadena
+
+def instruccion_asignacion_nuevo_valor(asignacion, ts, ambito):
+    global t_global, fila, ListaAsignacion, ListaAsignacion2
+    cadena = ""
+    if(isinstance(asignacion.exp, ExpresionRelacional)):
+        newT = t_global.varTemporal()
+        LV, LF, c3d = resolver_general(asignacion.exp, ts, ambito)
+        cadena += c3d
+        if(type(LV) != list):
+            cadena += "\t " + LV + ": \n"
+            fila += 1
+        else:
+            for n in LV:
+                cadena += "\t " + n + ": \n"
+                fila += 1
+        cadena += "\t " + newT + " = H; \n"
+        cadena += "\t heap[(int)H] = 116; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 114; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 117; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 101; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = -1; \n"
+        cadena += "\t H = H + 1; \n"
+        fila += 11
+        if(type(LF) != list):
+            cadena += "\t " + LF + ": \n"
+            fila += 1
+        else:
+            for n in LF:
+                cadena += "\t " + n + ": \n"
+                fila += 1
+        cadena += "\t " + newT + " = H; \n"
+        cadena += "\t heap[(int)H] = 102; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 97; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 108; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 115; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = 101; \n"
+        cadena += "\t H = H + 1; \n"
+        cadena += "\t heap[(int)H] = -1; \n"
+        cadena += "\t H = H + 1; \n"
+        fila += 13
+        variable = T.tipoSimbolo(newT, asignacion.id, 1, 1, "local", ambito, TABS.TIPO_DATO.STRING, False)
+        t_global.agregarSimbolo(variable)
+    else:
+        comprobar = False
+        valorT = ""
+        valorR = ""
+        valorM = False
+        pos = ""
+        tmp, c3d = resolver_general(asignacion.exp, ts, ambito)
+        for var in t_global.tablaSimbolos:
+            tipo = t_global.obtenerSimbolo(var)
+            if(tipo.nombre == asignacion.id):
+                valorT = tipo.temp
+                valorR = tipo.rol
+                pos = tipo.pos
+                valorM = tipo.mutable
+                comprobar = True
+        if(comprobar):
+            if(valorM == True):
+                cadena += c3d
+                if(valorR == "PAR"):
+                    newT = t_global.varTemporal()
+                    cadena += "\t " + newT + " = P +" + pos + "; \n"
+                    cadena += "\t stack[(int)" + newT + "] = " + str(tmp) + "; \n"
+                    fila += 2
+                else:
+                    newT = t_global.varTemporal()
+                    listaAux = []
+                    for n in ListaAsignacion:
+                        if(n.id != valorT):
+                            listaAux.append(n)
+                    ListaAsignacion = listaAux
+
+                    listaAux = []
+                    for n in ListaAsignacion2:
+                        if(n.id != valorT):
+                            listaAux.append(n)
+                    ListaAsignacion2 = listaAux
+
+                    #Falta Optimizacion de 1244 a 1245
+
+                    if(isinstance(tmp, str)):
+                        if(len(tmp) == 1):
+                            cadena += "\t " + valorT + " = " + str(ord(tmp)) + "; \n"
+                            fila += 1
+                        else:
+                            cadena += "\t " + valorT + " = " + str(tmp) + "; \n"
+                            fila += 1
+                    else:
+                        cadena += "\t " + valorT + " = " + str(tmp) + "; \n"
+                        fila += 1
+            else:
+                print("La variable no es mutable")
+    return cadena
+
+def instruccion_ciclo_while(instruccion, ts, ambito):
+    global t_global, existe_continue, existe_break, Lista_Break, Lista_Continue, fila
+    cadena = ""
+    LV, LF, c3d = resolver_general(instruccion.exp, ts, "while_" + ambito)
+    cadena += c3d
+    if(type(LV) != list):
+        cadena += "\t " + LV + ": \n"
+        fila += 1
+    else:
+        for n in LV:
+            cadena += "\t " + n + ": \n"
+            fila += 1
+    cadena += procesar_instrucciones(instruccion.instrucciones, ts, "while_" + ambito)
+    newL = t_global.etiquetaT()
+    cadena = "\t " + newL + ": \n" + cadena
+    fila += 1
+    if(existe_continue):
+        cadena += "\t " + Lista_Continue + ": \n"
+        fila += 1
+        existe_continue = False
+    cadena += "\t goto " + newL + "; \n"
+    fila += 1
+    if(type(LF) == list):
+        for n in LF:
+            cadena += "\t " + n + ": \n"
+            fila += 1
+    else:
+        cadena += "\t " + LF + ": \n"
+        fila += 1
+    if(existe_break):
+        cadena += "\t " + Lista_Break + ": \n"
+        fila += 1
+        existe_break = False
+    return cadena
 
 def procesar_instrucciones(instrucciones, ts, ambito):
     global existe_break, existe_continue, Lista_Break, Lista_Continue, t_global, fila
@@ -990,6 +1524,36 @@ def procesar_instrucciones(instrucciones, ts, ambito):
             cadena += instruccion_elseif(instruccion, ts, ambito)
         elif(isinstance(instruccion, AsignacionMutable)):
             cadena += instruccion_asignacion_mut(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionMutableTipo)):
+            cadena += instruccion_asignacion_mut_tipo(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionNoMutable)):
+            cadena += instruccion_asignacion_no_mut(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionNoMutableTipo)):
+            cadena += instruccion_asignacion_no_mut_tipo(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionNuevoValor)):
+            cadena += instruccion_asignacion_nuevo_valor(instruccion, ts, ambito)
+        elif(isinstance(instruccion, CicloWhile)):
+            cadena += instruccion_ciclo_while(instruccion, ts, ambito)
+
+        elif(isinstance(instruccion, InstruccionReturn)):
+            tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+            cadena += c3d + "\t stack[(int) P] = " + str(tmp) + "; \n"
+            Lsalto = t_global.etiquetaT()
+            cadena += "\t goto " + Lsalto + "; \n"
+            Lista_return.append(Lsalto)
+            fila += 2
+        elif(isinstance(instruccion, ExisteBreak)):
+            tmp = t_global.etiquetaT()
+            Lista_Break = tmp
+            existe_break = True
+            cadena += "\t goto " + str(tmp) + "; \n"
+            fila += 1
+        elif(isinstance(instruccion, ExisteContinue)):
+            tmp = t_global.etiquetaT()
+            Lista_Continue = tmp
+            existe_continue = True
+            cadena += "\t goto " + str(tmp) + "; \n"
+            fila += 1
     return cadena
 
 def datosC3D(inputs):
