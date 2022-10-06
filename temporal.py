@@ -55,12 +55,14 @@ class Temporales:
             print("Si se actualizo")
             pass
         else:
+            print("Se actualizo correctamente")
             self.tablaSimbolos[simbolo] = nuevoSi
 
 class tipoSimbolo():
-    def __init__(self, temp, nombre, tam, pos, rol, ambito, tipo, mutable):
+    def __init__(self, temp, nombre, valor, tam, pos, rol, ambito, tipo, mutable):
         self.temp = temp
         self.nombre = nombre
+        self.valor = valor
         self.tam = tam
         self.pos = pos
         self.rol = rol
