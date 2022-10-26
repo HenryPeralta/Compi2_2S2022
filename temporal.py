@@ -8,9 +8,12 @@ class Temporales:
         self.retorno = retorno
 
     def limpiar(self):
+        self.tablaSimbolos = {}
         self.temp = 0
         self.parametro = 0
         self.etiqueta = 0
+        self.funcion = 1
+        self.retorno = 0
 
     def varTemporal(self):
         variable = "t" + str(self.temp)

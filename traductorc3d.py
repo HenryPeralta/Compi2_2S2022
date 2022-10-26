@@ -1,9 +1,9 @@
-from re import TEMPLATE
 import tab_simbolos as TABS
 import gramatica as g
 from expresiones import  *
 from instrucciones import *
 import temporal as T
+import optimizacion as OP
 
 t_global = T.Temporales()
 mensaje = ""
@@ -118,26 +118,56 @@ def instruccion_print(instruccion, ts, ambito):
         cadena += "\t printf(\"%c\", (int)101); \n"
         cadena += "\t " + newT + ": \n"
         fila += 6
-    elif(isinstance(instruccion.exp, ExpresionIdentificador) and tipos == TABS.TIPO_DATO.CHAR):
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == TABS.TIPO_DATO.CHAR or tipos == "char")):
         tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
         cadena = c3d + "\t printf(\"%c\", (int)" + str(tmp) + "); \n"
         fila += 1
-    elif(isinstance(instruccion.exp, ExpresionIdentificador) and tipos == TABS.TIPO_DATO.I64):
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == TABS.TIPO_DATO.I64 or tipos == "i64")):
         tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
         cadena = c3d + "\t printf(\"%d\", (int)" + str(tmp) +"); \n"
         fila += 1
-    elif(isinstance(instruccion.exp, ExpresionIdentificador) and tipos == TABS.TIPO_DATO.F64):
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == TABS.TIPO_DATO.F64 or tipos == "f64")):
         tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
         cadena = c3d + "\t printf(\"%f\", " + str(tmp) +"); \n"
         fila += 1
-    elif(isinstance(instruccion.exp, ExpresionIdentificador) and tipos == TABS.TIPO_DATO.BOOL):
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == TABS.TIPO_DATO.BOOL or tipos == "bool")):
         tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
         cadena = c3d + "\t printf(\"%f\"," + str(tmp) + "); \n"
         fila += 1
+
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == "Binaria")):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d + "\t printf(\"%f\"," + str(tmp) + "); \n"
+        fila += 1
+
     #elif(isinstance(instruccion.exp, ExpresionIdentificador) and tipos != TABS.TIPO_DATO.STRING):
     #    tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
     #    cadena = c3d + "\t printf(\"%f\"," + str(tmp) + "); \n"
     #    fila += 1
+
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and tipos == "Arreglo"):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d
+        newT = t_global.varTemporal()
+        newV = t_global.varTemporal()
+        Ltrue = t_global.etiquetaT()
+        Lsalto = t_global.etiquetaT()
+
+        cadena += "\t " + newV + " = " + str(tmp) + "; \n"
+        cadena += "\t printf(\"%c\", (int)91); \n"
+        cadena += "\t " + newT + " = heap[(int)" + newV + "]; \n"
+        cadena += "\t printf(\"%d\", (int)" + newT + "); \n"
+        cadena += "\t " + Lsalto + ": \n"
+        cadena += "\t " + newV + " = " + newV + " + 1; \n"
+        cadena += "\t " + newT + " = heap[(int)" + newV + "]; \n"
+        cadena += "\t if(" + newT + " == -1) goto " + Ltrue + "; \n"
+        cadena += "\t printf(\"%c\", (int)44); \n"
+        cadena += "\t printf(\"%d\", (int)" + newT + "); \n"
+        cadena += "\t goto " + Lsalto + "; \n"
+        cadena += "\t " + Ltrue + ": \n"
+        cadena += "\t printf(\"%c\", (int)93); \n"
+        fila += 11
+
     elif(isinstance(instruccion.exp, LlamadaFuncion)):
         tmp, c3d = instruccion_llamada_funcion(instruccion.exp, ts, ambito)
         cadena = c3d + "\t printf(\"%f\", " + str(tmp) + "); \n"
@@ -219,9 +249,8 @@ def instruccion_println(instruccion, ts, ambito):
             if(tipo.nombre == instruccion.exp.id):
                 tipos = tipo.tipo
 
-    print(".-.-.-.-.-")
+    print(".........")
     print(tipos)
-
     if(isinstance(instruccion.exp, ExpresionBinaria) and not isinstance(instruccion.exp.exp1, ExpresionDobleComilla) and not isinstance(instruccion.exp.exp2, ExpresionDobleComilla) and comprobar):
         tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
         cadena = c3d + "\t printf(\"%f\", " + str(tmp) +"); \n"
@@ -309,7 +338,7 @@ def instruccion_println(instruccion, ts, ambito):
         cadena += "\t printf(\"%c\", (int)10); \n"
         cadena += "\t " + newT + ": \n"
         fila += 7
-    elif(isinstance(instruccion.exp, ExpresionIdentificador) and tipos == TABS.TIPO_DATO.CHAR):
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == TABS.TIPO_DATO.CHAR or tipos == "char")):
         tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
         cadena = c3d + "\t printf(\"%c\", (int)" + str(tmp) + "); \n"
         cadena += "\t printf(\"%c\", (int)10); \n"
@@ -317,19 +346,25 @@ def instruccion_println(instruccion, ts, ambito):
 
     #Falta una instancia de tipo list
 
-    elif(isinstance(instruccion.exp, ExpresionIdentificador) and tipos == TABS.TIPO_DATO.I64):
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == TABS.TIPO_DATO.I64 or tipos == "i64")):
         tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
         cadena = c3d + "\t printf(\"%d\", (int)" + str(tmp) +"); \n"
         cadena += "\t printf(\"%c\", (int)10); \n"
         fila += 2
 
-    elif(isinstance(instruccion.exp, ExpresionIdentificador) and tipos == TABS.TIPO_DATO.F64):
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == TABS.TIPO_DATO.F64 or tipos == "f64")):
         tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
         cadena = c3d + "\t printf(\"%f\", " + str(tmp) +"); \n"
         cadena += "\t printf(\"%c\", (int)10); \n"
         fila += 2
 
-    elif(isinstance(instruccion.exp, ExpresionIdentificador) and tipos == TABS.TIPO_DATO.BOOL):
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == TABS.TIPO_DATO.BOOL or tipos == "bool")):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d + "\t printf(\"%f\"," + str(tmp) + "); \n"
+        cadena += "\t printf(\"%c\", (int)10); \n"
+        fila += 2
+
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == "Binaria")):
         tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
         cadena = c3d + "\t printf(\"%f\"," + str(tmp) + "); \n"
         cadena += "\t printf(\"%c\", (int)10); \n"
@@ -342,7 +377,33 @@ def instruccion_println(instruccion, ts, ambito):
     #    cadena += "\t printf(\"%c\", (int)10); \n"
     #    fila += 2
 
-    #Falta una instancia de tipo list
+    #Este de abajo es el correcto
+
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and tipos == "Arreglo"):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d
+        newT = t_global.varTemporal()
+        newV = t_global.varTemporal()
+        Ltrue = t_global.etiquetaT()
+        Lsalto = t_global.etiquetaT()
+
+        cadena += "\t " + newV + " = " + str(tmp) + "; \n"
+        cadena += "\t printf(\"%c\", (int)91); \n"
+        cadena += "\t " + newT + " = heap[(int)" + newV + "]; \n"
+        cadena += "\t printf(\"%d\", (int)" + newT + "); \n"
+        cadena += "\t " + Lsalto + ": \n"
+        cadena += "\t " + newV + " = " + newV + " + 1; \n"
+        cadena += "\t " + newT + " = heap[(int)" + newV + "]; \n"
+        cadena += "\t if(" + newT + " == -1) goto " + Ltrue + "; \n"
+        cadena += "\t printf(\"%c\", (int)44); \n"
+        cadena += "\t printf(\"%d\", (int)" + newT + "); \n"
+        cadena += "\t goto " + Lsalto + "; \n"
+        cadena += "\t " + Ltrue + ": \n"
+        cadena += "\t printf(\"%c\", (int)93); \n"
+        cadena += "\t printf(\"%c\", (int)10); \n"
+
+        fila += 12
+
     elif(isinstance(instruccion.exp, LlamadaFuncion)):
         tmp, c3d = instruccion_llamada_funcion(instruccion.exp, ts, ambito)
         cadena = c3d + "\t printf(\"%f\", " + str(tmp) + "); \n"
@@ -433,16 +494,10 @@ def resolver_general(exp, ts, ambito):
         if(exp.boolean):
             cadena += "\t if (1 == 1) goto " + Ltrue + ";\n"
             cadena += "\t goto " + Lfalse + ";\n"
-
-            #Falta Optimizacion de la fila 375 a 378
-
             fila += 2
         else:
             cadena += "\t if (0 == 1) goto " + Ltrue + "; \n"
             cadena += "\t goto " + Lfalse + ";\n"
-
-            #Falta Optimizacion de la fila 386 a 389
-
             fila += 2
         return Ltrue, Lfalse, cadena
 
@@ -555,16 +610,124 @@ def resolver_general(exp, ts, ambito):
             newT = str(t_global.varTemporal())
             c3d = exp1 + exp2 + "\t " + newT + " = " + str(tmp1) + " + " + str(tmp2) + "; \n"
 
-            #Falta Optimizacion de 504 a 569
+            #Optimizacion
+            comprobar = False
+            for n in ListaAsignacion:
+                if(n.op == "+"):
+                    if(n.exp1 == str(tmp1) and n.exp2 == str(tmp2)):
+                        comprobar = True
+                        #Optimizacion
+                        Original = newT + " = " + str(tmp1) + " + " + str(tmp2) + ";"
+                        Opti = newT + " = " + n.id + ";"
+                        R = OP.Optimizacion("Bloque", "Subexpresiones comunes <br/>Regla 1", Original, Opti, fila)
+                        OP.agregarOp(R)
 
+            if(not comprobar):
+                A = OP.Asignacion(newT, "+", str(tmp1), str(tmp2))
+                ListaAsignacion.append(A)
+
+            #Optimizacion 
+            for n in ListaAsignacion2:
+                if(n.id == str(tmp1)):
+                    try:
+                        ListaAllAsignacion.remove(tmp1)
+                    except:
+                        print()
+                    #Optimizacion 2
+                    if(n.tipo == 1):
+                        #Optimizacion 
+                        Original = newT + " = " + str(tmp1) + " + " + str(tmp2) + ";"
+                        Opti = newT + " = " + str(n.exp) + " + " + str(tmp2) + ";"
+                        R = OP.Optimizacion("Bloque", "Propagacion de copias Regla 2", Original, Opti, fila)
+                        OP.agregarOp(R)
+
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp1) + " + " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(n.exp) + " + " + str(tmp2) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Eliminacion de codigo muerto Regla 3", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
+                    else:
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp2) + ";"
+                        Opti2 = newT + " = " +str(n.exp) + " + " + str(tmp2) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Propagacion de constantes Regla 4", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
+                elif(n.id == str(tmp2)):
+                    #Optimizacion 2
+                    if(n.tipo == 1):
+                        #Optimizacion
+                        Original = newT + " = " + str(tmp1) + " + " + str(tmp2) + ";"
+                        Opti = newT + " = " + str(tmp1) + " + " + str(n.exp) + ";"
+                        R = OP.Optimizacion("Bloque", "Propagacion de copias Regla 2", Original, Opti, fila)
+                        OP.agregarOp(R)
+
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp1) + " + " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(tmp1) + " + " + str(n.exp) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Eliminacion de codigo muerto Regla 3", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
+                    else:
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp1) + " + " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(tmp1) + " + " + str(n.exp) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Propagacion de constantes Regla 4", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
             fila += 1
             return newT, c3d
         if(exp.operador == OPERACIONES_ARITMETICAS.MENOS):
             newT = str(t_global.varTemporal())
             c3d = exp1 + exp2 + "\t " + newT + " = " + str(tmp1) + " - " + str(tmp2) + "; \n"
 
-            #Falta Optimizacion de 579 a 638
+            #Optimizacion
+            comprobar = False
+            for n in ListaAsignacion:
+                if (n.op == "-"):
+                    if (n.exp1 == str(tmp1) and n.exp2 == str(tmp2)):
+                        comprobar = True
+                        #Optimizacion
+                        Original = "\t "+ newT + " = " + str(tmp1)+ " - " + str(tmp2) + ";\n"
+                        Opti = "\t  " + newT + " = " + n.id + ";\n"
+                        R = OP.Optimizacion("Bloque", "Subexpresiones comunes Regla 1", Original, Opti, fila)
+                        OP.agregarOp(R)
 
+            if (not comprobar):
+                A = OP.Asignacion(newT, "-", str(tmp1), str(tmp2))
+                ListaAsignacion.append(A) 
+
+            #Optimizacion
+            for n in ListaAsignacion2:
+                if (n.id == str(tmp1)):
+                    #Optimizacion 2
+                    if (n.tipo == 1):
+                        #Optimizacion
+                        Original = newT + " = " + str(tmp1)+ " - " + str(tmp2) + ";"
+                        Opti = newT + " = " + str(n.exp) + " - " + str(tmp2) + ";"
+                        R = OP.Optimizacion("Bloque", "Propagacion de copias Regla 2", Original, Opti, fila)
+                        OP.agregarOp(R)
+                        
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp1) + " - " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(n.exp) + " + " + str(tmp2) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Eliminacion de codigo muerto Regla 3", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
+                    else:
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp1) + " - " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(n.exp) + " - " + str(tmp2) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Propagacion de constantes Regla 4", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
+                elif (n.id == str(tmp2)):
+                    #Optimizacion 2
+                    if (n.tipo == 1):  
+                        #Optimizacion 
+                        Original = newT + " = " + str(tmp1) + " - " + str(tmp2) + ";"
+                        Opti = newT + " = " + str(tmp1) + " - " + str(n.exp) + ";"
+                        R = OP.Optimizacion("Bloque", "Propagacion de copias Regla 2", Original, Opti, fila)
+                        OP.agregarOp(R)
+
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp1) + " - " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(tmp1) + " - " + str(n.exp) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Eliminacion de codigo muerto Regla 3", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
+                    else:
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp1) + " - " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(tmp1) + " - " + str(n.exp) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Propagacion de copias Regla 4", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
             fila += 1
             return newT, c3d
         if(exp.operador == OPERACIONES_ARITMETICAS.MULTIPLICACION):
@@ -572,8 +735,60 @@ def resolver_general(exp, ts, ambito):
             c3d = exp1 + exp2 + "\t " + newT + " = " + str(tmp1) + " * " + str(tmp2) + ";\n"
             fila += 1
 
-            #Falta Optimizacion de 647 a 736
+            #Optimizacion
+            comprobar = False
+            for n in ListaAsignacion:
+                if (n.op == "*"):
+                    if (n.exp1 == str(tmp1) and n.exp2 == str(tmp2)):
+                        comprobar = True
+                        #Optimizacion
+                        Original = "\t  " + newT + " = " + str(tmp1) + " * " + str(tmp2) + ";\n"
+                        Opti = "\t  " + newT + " = " + n.id + ";\n"
+                        R = OP.Optimizacion("Bloque", "Subexpresiones comunes Regla 1", Original, Opti, fila)
+                        OP.agregarOp(R)
 
+            if (not comprobar):
+                A = OP.Asignacion(newT, "*", str(tmp1), str(tmp2))
+                ListaAsignacion.append(A) 
+
+            #Optimizacion
+            for n in ListaAsignacion2:
+                if (n.id == str(tmp1)):
+                    #Optimizacion 2
+                    if (n.tipo == 1):
+                        #Optimizacion
+                        Original = newT + " = " + str(tmp1) + " * " + str(tmp2) + ";"
+                        Opti = newT + " = " + str(n.exp) + " * " + str(tmp2) + ";"
+                        R = OP.Optimizacion("Bloque", "Propagacion de copias Regla 2", Original, Opti, fila)
+                        OP.agregarOp(R)
+
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp1) + " * " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(n.exp) + " * " + str(tmp2) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Eliminacion de codigo muerto Regla 3", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
+                    else:
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp1) + " * " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(n.exp) + " * " + str(tmp2) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Propagacion de constantes Regla 4", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
+                elif (n.id == str(tmp2)):
+                    #Optimizacion 2
+                    if (n.tipo == 1):
+                        #Optimizacion
+                        Original = newT + " = "+ str(tmp1) + " * " + str(tmp2) + ";"
+                        Opti = newT + " = " + str(tmp1) + " * " + str(n.exp) + ";"
+                        R = OP.Optimizacion("Bloque", "Propagacion de copias Regla 2", Original, Opti, fila)
+                        OP.agregarOp(R)
+
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp1) + " * " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(tmp1) + " * " + str(n.exp) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Eliminacion de codigo muerto Regla 3", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
+                    else:
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp1) + " * " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(tmp1) + " * " + str(n.exp) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Propagacion de copias Regla 4", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
             return newT, c3d
         if(exp.operador == OPERACIONES_ARITMETICAS.DIVISION):
             newT = str(t_global.varTemporal())
@@ -581,6 +796,10 @@ def resolver_general(exp, ts, ambito):
             Lsalto = t_global.etiquetaT()
             c3d = exp1 + exp2
             c3d += "\t if (" + str(tmp2) + " != 0) goto " + Ltrue + "; \n"
+            c3d += "\t printf(\"%c\", 77); \n"
+            c3d += "\t printf(\"%c\", 97); \n"
+            c3d += "\t printf(\"%c\", 116); \n"
+            c3d += "\t printf(\"%c\", 104); \n"
             c3d += "\t printf(\"%c\", 69); \n"
             c3d += "\t printf(\"%c\", 114); \n"
             c3d += "\t printf(\"%c\", 114); \n"
@@ -593,16 +812,66 @@ def resolver_general(exp, ts, ambito):
             c3d += "\t " + newT + " = " + str(tmp1) + " / " + str(tmp2) + "; \n"
             c3d += "\t " + Lsalto + ": \n"
 
-            #Falta Optimizacion de 762 a 828
+            #Optimizacion
+            comprobar = False
+            for n in ListaAsignacion:
+                if (n.op == "/"):
+                    if (n.exp1 == str(tmp1) and n.exp2 == str(tmp2)):
+                        comprobar = True
+                        #Optimizacion
+                        Original = "\t  " + newT + " = "+ str(tmp1) + " / " + str(tmp2) + ";\n"
+                        Opti = "\t  " + newT + " = " + n.id + ";\n"
+                        R = OP.Optimizacion("Bloque", "Subexpresiones comunes Regla 1", Original, Opti, fila)
+                        OP.agregarOp(R)
+
+            if (not comprobar):
+                A = OP.Asignacion(newT, "/", str(tmp1), str(tmp2))
+                ListaAsignacion.append(A) 
+
+            #Optimizacion
+            for n in ListaAsignacion2:
+                if (n.id == str(tmp1)):
+                    #Optimizacion 2
+                    if (n.tipo == 1):
+                        #Optimizacion 1
+                        Original = newT + " = " + str(tmp1) + " / " + str(tmp2) + ";"
+                        Opti = newT + " = " + str(n.exp) + " / " + str(tmp2) + ";"
+                        R = OP.Optimizacion("Bloque", "Propagacion de copias Regla 2", Original, Opti, fila)
+                        OP.agregarOp(R)
+                        
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp1) + " / " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(n.exp) + " / " + str(tmp2) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Eliminacion de codigo muerto Regla 3", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
+                    else:
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp1) + " / " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(n.exp) + " / " + str(tmp2) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Propagacion de constantes Regla 4", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
+                elif (n.id == str(tmp2)):
+                    #Optimizacion 2
+                    if (n.tipo == 1):
+                        #Optimizacion 1
+                        Original = newT + " = " + str(tmp1) + " / " + str(tmp2) + ";"
+                        Opti = newT + " = " + str(tmp1) + " / " + str(n.exp) + ";"
+                        R = OP.Optimizacion("Bloque", "Propagacion de copias Regla 2", Original, Opti, fila)
+                        OP.agregarOp(R)
+
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = "+ str(tmp1) + " / " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(tmp1) + " / " + str(n.exp) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Eliminacion de codigo muerto Regla 3", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
+                    else:
+                        Original2 = str(n.id) + " = " + str(n.exp) + ";<br/>" + newT + " = " + str(tmp1) + " / " + str(tmp2) + ";"
+                        Opti2 = newT + " = " + str(tmp1)+ " / " + str(n.exp) + ";"
+                        R2 = OP.Optimizacion("Bloque", "Propagacion de constantes Regla 4", Original2, Opti2, fila)
+                        OP.agregarOp(R2)
 
             fila += 16
             return newT, c3d
         if(exp.operador == OPERACIONES_ARITMETICAS.MODULO):
             newT = str(t_global.varTemporal())
             c3d = exp1 + exp2 + "\t " + newT + " = " + str(tmp1) + " % " + str(tmp2) + "; \n"
-
-            #Falta Optimizacion de 504 a 569
-
             fila += 1
             return newT, c3d
     elif(isinstance(exp, ExpresionIdentificador)):
@@ -1055,7 +1324,9 @@ def instruccion_asignacion_mut(asignacion, ts, ambito):
                         listaAux.append(n)
                 ListaAsignacion2 = listaAux
 
-                #Falta Optimizacion de 1244 a 1245
+                #Optimizacion
+                A2 = OP.Asignacion2(valorT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 if(isinstance(tmp, str)):
                     if(len(tmp) == 1):
@@ -1074,7 +1345,10 @@ def instruccion_asignacion_mut(asignacion, ts, ambito):
                 cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.STRING, True)
 
-                #Falta Optimizacion de 1257 a 1259
+                #Optimizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
@@ -1087,11 +1361,18 @@ def instruccion_asignacion_mut(asignacion, ts, ambito):
                 if(isinstance(tmp, float)):
                     cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                     variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.F64, True)
+                    
+                    #Optimizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
                 else:
                     cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                     variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.I64, True)
-                                
-                #Falta Optimizacion de 1268 a 1270
+                    #Optimizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
@@ -1099,7 +1380,21 @@ def instruccion_asignacion_mut(asignacion, ts, ambito):
                 cadena += c3d + "\t " + newT + " = " + str(ord(tmp)) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.CHAR, True)
 
-                #Falta Optimizacion de 1257 a 1259
+                #Optimizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+            elif(isinstance(asignacion.exp, ExpresionBinaria)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "Binaria", True)
+                                
+                #Optimizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
@@ -1107,7 +1402,10 @@ def instruccion_asignacion_mut(asignacion, ts, ambito):
                 cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "", True)
                                 
-                #Falta Optimizacion de 1279 a 1281
+                #Optimizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
@@ -1208,7 +1506,9 @@ def instruccion_asignacion_mut_tipo(asignacion, ts, ambito):
                         listaAux.append(n)
                 ListaAsignacion2 = listaAux
 
-                #Falta Optimizacion de 1244 a 1245
+                #Optimizacion
+                A2 = OP.Asignacion2(valorT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 if(isinstance(tmp, str)):
                     if(len(tmp) == 1):
@@ -1227,7 +1527,10 @@ def instruccion_asignacion_mut_tipo(asignacion, ts, ambito):
                 cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.STRING, True)
 
-                #Falta Optimizacion de 1257 a 1259
+                #Optmizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
@@ -1240,11 +1543,19 @@ def instruccion_asignacion_mut_tipo(asignacion, ts, ambito):
                 if(isinstance(tmp, float)):
                     cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                     variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.F64, True)
+                    
+                    #Optmizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
                 else:
                     cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                     variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.I64, True)
-                                
-                #Falta Optimizacion de 1268 a 1270
+                    
+                    #Optmizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
@@ -1252,7 +1563,21 @@ def instruccion_asignacion_mut_tipo(asignacion, ts, ambito):
                 cadena += c3d + "\t " + newT + " = " + str(ord(tmp)) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.CHAR, True)
 
-                #Falta Optimizacion de 1257 a 1259
+                #Optmizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+            elif(isinstance(asignacion.exp, ExpresionBinaria)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "Binaria", True)
+                                
+                #Optmizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
@@ -1260,7 +1585,10 @@ def instruccion_asignacion_mut_tipo(asignacion, ts, ambito):
                 cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "", True)
                                 
-                #Falta Optimizacion de 1279 a 1281
+                #Optmizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
@@ -1361,7 +1689,9 @@ def instruccion_asignacion_no_mut(asignacion, ts, ambito):
                         listaAux.append(n)
                 ListaAsignacion2 = listaAux
 
-                #Falta Optimizacion de 1244 a 1245
+                #Optimizacion
+                A2 = OP.Asignacion2(valorT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 if(isinstance(tmp, str)):
                     if(len(tmp) == 1):
@@ -1380,7 +1710,10 @@ def instruccion_asignacion_no_mut(asignacion, ts, ambito):
                 cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.STRING, False)
 
-                #Falta Optimizacion de 1257 a 1259
+                #Optmizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
@@ -1393,19 +1726,41 @@ def instruccion_asignacion_no_mut(asignacion, ts, ambito):
                 if(isinstance(tmp, float)):
                     cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                     variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.F64, True)
+                    
+                    #Optmizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
                 else:
                     cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                     variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.I64, False)
-                                
-                #Falta Optimizacion de 1268 a 1270
 
+                    #Optmizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
+                                
                 fila += 1
                 t_global.agregarSimbolo(variable)
             elif(isinstance(asignacion.exp, ExpresionCaracter)):
                 cadena += c3d + "\t " + newT + " = " + str(ord(tmp)) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.CHAR, False)
 
-                #Falta Optimizacion de 1257 a 1259
+                #Optmizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+            elif(isinstance(asignacion.exp, ExpresionBinaria)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "Binaria", True)
+                                
+                #Optmizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
@@ -1413,7 +1768,10 @@ def instruccion_asignacion_no_mut(asignacion, ts, ambito):
                 cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "", False)
                                 
-                #Falta Optimizacion de 1279 a 1281
+                #Optmizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
@@ -1514,7 +1872,9 @@ def instruccion_asignacion_no_mut_tipo(asignacion, ts, ambito):
                         listaAux.append(n)
                 ListaAsignacion2 = listaAux
 
-                #Falta Optimizacion de 1244 a 1245
+                #Optimizacion
+                A2 = OP.Asignacion2(valorT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 if(isinstance(tmp, str)):
                     if(len(tmp) == 1):
@@ -1533,7 +1893,10 @@ def instruccion_asignacion_no_mut_tipo(asignacion, ts, ambito):
                 cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.STRING, False)
 
-                #Falta Optimizacion de 1257 a 1259
+                #Optmizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
@@ -1546,19 +1909,41 @@ def instruccion_asignacion_no_mut_tipo(asignacion, ts, ambito):
                 if(isinstance(tmp, float)):
                     cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                     variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.F64, True)
+                    
+                    #Optmizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
                 else:
                     cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                     variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.I64, False)
-                                
-                #Falta Optimizacion de 1268 a 1270
 
+                    #Optmizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
+                                
                 fila += 1
                 t_global.agregarSimbolo(variable)
             elif(isinstance(asignacion.exp, ExpresionCaracter)):
                 cadena += c3d + "\t " + newT + " = " + str(ord(tmp)) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.CHAR, False)
 
-                #Falta Optimizacion de 1257 a 1259
+                #Optmizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
+
+                fila += 1
+                t_global.agregarSimbolo(variable)
+            elif(isinstance(asignacion.exp, ExpresionBinaria)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "Binaria", True)
+                                
+                #Optmizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
@@ -1566,7 +1951,10 @@ def instruccion_asignacion_no_mut_tipo(asignacion, ts, ambito):
                 cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "", False)
                                 
-                #Falta Optimizacion de 1279 a 1281
+                #Optmizacion
+                ListaAllAsignacion.append(newT)
+                A2 = OP.Asignacion2(newT, str(tmp), 1)
+                ListaAsignacion2.append(A2)
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
@@ -1799,14 +2187,10 @@ def instruccion_funcion(funcion, ts, ambito):
     pos = 1
     for n in funcion.listaparametro:
         newT = t_global.varTemporal()
-        parametro = T.tipoSimbolo(newT, n.id, "", 1, str(pos), "PAR", ambito, "PAR", True)
+        parametro = T.tipoSimbolo(newT, n.id, "", 1, str(pos), "PAR", ambito, n.tipo, True)
         t_global.agregarSimbolo(parametro)
         pos += 1
     cadena = procesar_instrucciones(funcion.instrucciones, ts, ambito)
-    print("........")
-    print(funcion.instrucciones)
-    print("........")
-    print(cadena)
     cadenafuncion += "\n void " + funcion.id + "(){ \n"
     cadenafuncion += cadena
     fila += 1
@@ -1826,7 +2210,7 @@ def instruccion_funcion_tipo(funcion, ts, ambito):
     pos = 1
     for n in funcion.listaparametro:
         newT = t_global.varTemporal()
-        parametro = T.tipoSimbolo(newT, n.id, "", 1, str(pos), "PAR", ambito, "PAR", True)
+        parametro = T.tipoSimbolo(newT, n.id, "", 1, str(pos), "PAR", ambito, n.tipo, True)
         t_global.agregarSimbolo(parametro)
         pos += 1
     cadena = procesar_instrucciones(funcion.instrucciones, ts, ambito)
@@ -1871,6 +2255,230 @@ def instruccion_llamada_funcion(funcion, ts, ambito):
     fila += 2
     return newV, cadena
 
+def instruccion_asignacion_arreglo_mutable(instruccion, ts, ambito):
+    global posH, t_global, fila
+    cadena = ""
+    listaValor = []
+    listac3d = []
+    for n in instruccion.listaexp:
+        tmp, c3d = resolver_general(n, ts, ambito)
+        listac3d.append(c3d)
+        listaValor.append(tmp)
+    newT = t_global.varTemporal()
+    simbolo = T.tipoSimbolo(newT, instruccion.id, listaValor, len(listaValor), posH, "local", ambito, "Arreglo", True)
+    cadena += "\t " + newT + " = H; \n"
+    fila += 1
+    x = 0
+    for n in listaValor:
+        cadena += listac3d[x]
+        cadena += "\t heap[(int)H] = " + str(n) + "; \n"
+        cadena += "\t H = H + 1; \n"
+        posH += 1
+        x += 1
+        fila += 2
+    cadena += "\t heap[(int)H] = -1; \n"
+    cadena += "\t H = H + 1; \n"
+    posH += 1
+    fila += 2
+    t_global.agregarSimbolo(simbolo)
+    return cadena
+
+def instruccion_asignacion_arreglo_mutable_tipo(instruccion, ts, ambito):
+    global posH, t_global, fila
+    cadena = ""
+    listaValor = []
+    listac3d = []
+    for n in instruccion.listaexp:
+        tmp, c3d = resolver_general(n, ts, ambito)
+        listac3d.append(c3d)
+        listaValor.append(tmp)
+    newT = t_global.varTemporal()
+    simbolo = T.tipoSimbolo(newT, instruccion.id, listaValor, len(listaValor), posH, "local", ambito, "Arreglo", True)
+    cadena += "\t " + newT + " = H; \n"
+    fila += 1
+    x = 0
+    for n in listaValor:
+        cadena += listac3d[x]
+        cadena += "\t heap[(int)H] = " + str(n) + "; \n"
+        cadena += "\t H = H + 1; \n"
+        posH += 1
+        x += 1
+        fila += 2
+    cadena += "\t heap[(int)H] = -1; \n"
+    cadena += "\t H = H + 1; \n"
+    posH += 1
+    fila += 2
+    t_global.agregarSimbolo(simbolo)
+    return cadena
+
+def instruccion_asignacion_arreglo_no_mutable(instruccion, ts, ambito):
+    global posH, t_global, fila
+    cadena = ""
+    listaValor = []
+    listac3d = []
+    for n in instruccion.listaexp:
+        tmp, c3d = resolver_general(n, ts, ambito)
+        listac3d.append(c3d)
+        listaValor.append(tmp)
+    newT = t_global.varTemporal()
+    simbolo = T.tipoSimbolo(newT, instruccion.id, listaValor, len(listaValor), posH, "local", ambito, "Arreglo", False)
+    cadena += "\t " + newT + " = H; \n"
+    fila += 1
+    x = 0
+    for n in listaValor:
+        cadena += listac3d[x]
+        cadena += "\t heap[(int)H] = " + str(n) + "; \n"
+        cadena += "\t H = H + 1; \n"
+        posH += 1
+        x += 1
+        fila += 2
+    cadena += "\t heap[(int)H] = -1; \n"
+    cadena += "\t H = H + 1; \n"
+    posH += 1
+    fila += 2
+    t_global.agregarSimbolo(simbolo)
+    return cadena
+
+def instruccion_asignacion_arreglo_no_mutable_tipo(instruccion, ts, ambito):
+    global posH, t_global, fila
+    cadena = ""
+    listaValor = []
+    listac3d = []
+    for n in instruccion.listaexp:
+        tmp, c3d = resolver_general(n, ts, ambito)
+        listac3d.append(c3d)
+        listaValor.append(tmp)
+    newT = t_global.varTemporal()
+    simbolo = T.tipoSimbolo(newT, instruccion.id, listaValor, len(listaValor), posH, "local", ambito, "Arreglo", False)
+    cadena += "\t " + newT + " = H; \n"
+    fila += 1
+    x = 0
+    for n in listaValor:
+        cadena += listac3d[x]
+        cadena += "\t heap[(int)H] = " + str(n) + "; \n"
+        cadena += "\t H = H + 1; \n"
+        posH += 1
+        x += 1
+        fila += 2
+    cadena += "\t heap[(int)H] = -1; \n"
+    cadena += "\t H = H + 1; \n"
+    posH += 1
+    fila += 2
+    t_global.agregarSimbolo(simbolo)
+    return cadena
+
+def instruccion_asignacion_vector_mutable(instruccion, ts, ambito):
+    global posH, t_global, fila
+    cadena = ""
+    listaValor = []
+    listac3d = []
+    for n in instruccion.listaexp:
+        tmp, c3d = resolver_general(n, ts, ambito)
+        listac3d.append(c3d)
+        listaValor.append(tmp)
+    newT = t_global.varTemporal()
+    simbolo = T.tipoSimbolo(newT, instruccion.id, listaValor, len(listaValor), posH, "local", ambito, "Arreglo", True)
+    cadena += "\t " + newT + " = H; \n"
+    fila += 1
+    x = 0
+    for n in listaValor:
+        cadena += listac3d[x]
+        cadena += "\t heap[(int)H] = " + str(n) + "; \n"
+        cadena += "\t H = H + 1; \n"
+        posH += 1
+        x += 1
+        fila += 2
+    cadena += "\t heap[(int)H] = -1; \n"
+    cadena += "\t H = H + 1; \n"
+    posH += 1
+    fila += 2
+    t_global.agregarSimbolo(simbolo)
+    return cadena
+
+def instruccion_asignacion_vector_mutable_tipo(instruccion, ts, ambito):
+    global posH, t_global, fila
+    cadena = ""
+    listaValor = []
+    listac3d = []
+    for n in instruccion.listaexp:
+        tmp, c3d = resolver_general(n, ts, ambito)
+        listac3d.append(c3d)
+        listaValor.append(tmp)
+    newT = t_global.varTemporal()
+    simbolo = T.tipoSimbolo(newT, instruccion.id, listaValor, len(listaValor), posH, "local", ambito, "Arreglo", True)
+    cadena += "\t " + newT + " = H; \n"
+    fila += 1
+    x = 0
+    for n in listaValor:
+        cadena += listac3d[x]
+        cadena += "\t heap[(int)H] = " + str(n) + "; \n"
+        cadena += "\t H = H + 1; \n"
+        posH += 1
+        x += 1
+        fila += 2
+    cadena += "\t heap[(int)H] = -1; \n"
+    cadena += "\t H = H + 1; \n"
+    posH += 1
+    fila += 2
+    t_global.agregarSimbolo(simbolo)
+    return cadena
+
+def instruccion_asignacion_vector_no_mutable(instruccion, ts, ambito):
+    global posH, t_global, fila
+    cadena = ""
+    listaValor = []
+    listac3d = []
+    for n in instruccion.listaexp:
+        tmp, c3d = resolver_general(n, ts, ambito)
+        listac3d.append(c3d)
+        listaValor.append(tmp)
+    newT = t_global.varTemporal()
+    simbolo = T.tipoSimbolo(newT, instruccion.id, listaValor, len(listaValor), posH, "local", ambito, "Arreglo", False)
+    cadena += "\t " + newT + " = H; \n"
+    fila += 1
+    x = 0
+    for n in listaValor:
+        cadena += listac3d[x]
+        cadena += "\t heap[(int)H] = " + str(n) + "; \n"
+        cadena += "\t H = H + 1; \n"
+        posH += 1
+        x += 1
+        fila += 2
+    cadena += "\t heap[(int)H] = -1; \n"
+    cadena += "\t H = H + 1; \n"
+    posH += 1
+    fila += 2
+    t_global.agregarSimbolo(simbolo)
+    return cadena
+
+def instruccion_asignacion_vector_no_mutable_tipo(instruccion, ts, ambito):
+    global posH, t_global, fila
+    cadena = ""
+    listaValor = []
+    listac3d = []
+    for n in instruccion.listaexp:
+        tmp, c3d = resolver_general(n, ts, ambito)
+        listac3d.append(c3d)
+        listaValor.append(tmp)
+    newT = t_global.varTemporal()
+    simbolo = T.tipoSimbolo(newT, instruccion.id, listaValor, len(listaValor), posH, "local", ambito, "Arreglo", False)
+    cadena += "\t " + newT + " = H; \n"
+    fila += 1
+    x = 0
+    for n in listaValor:
+        cadena += listac3d[x]
+        cadena += "\t heap[(int)H] = " + str(n) + "; \n"
+        cadena += "\t H = H + 1; \n"
+        posH += 1
+        x += 1
+        fila += 2
+    cadena += "\t heap[(int)H] = -1; \n"
+    cadena += "\t H = H + 1; \n"
+    posH += 1
+    fila += 2
+    t_global.agregarSimbolo(simbolo)
+    return cadena
+
 def procesar_instrucciones(instrucciones, ts, ambito):
     print(instrucciones)
     global existe_break, existe_continue, Lista_Break, Lista_Continue, t_global, fila
@@ -1907,6 +2515,22 @@ def procesar_instrucciones(instrucciones, ts, ambito):
         elif(isinstance(instruccion, LlamadaFuncion)):
             tmp, c3d = instruccion_llamada_funcion(instruccion, ts, ambito)
             cadena += c3d
+        elif(isinstance(instruccion, AsignacionArregloMutable)):
+            cadena += instruccion_asignacion_arreglo_mutable(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionArregloMutableTipo)):
+            cadena += instruccion_asignacion_arreglo_mutable_tipo(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionArregloNoMutable)):
+            cadena += instruccion_asignacion_arreglo_no_mutable(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionArregloNoMutableTipo)):
+            cadena += instruccion_asignacion_arreglo_no_mutable_tipo(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionVectorMutable)):
+            cadena += instruccion_asignacion_vector_mutable(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionVectorMutableTipo)):
+            cadena += instruccion_asignacion_vector_mutable_tipo(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionVectorNoMutable)):
+            cadena += instruccion_asignacion_vector_no_mutable(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionVectorNoMutableTipo)):
+            cadena += instruccion_asignacion_vector_no_mutable_tipo(instruccion, ts, ambito)
 
         elif(isinstance(instruccion, InstruccionReturn)):
             tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
@@ -1965,6 +2589,18 @@ def datosC3D(inputs):
     mensaje += "\t return 0; \n"
     mensaje += "}"
 
+    for n in ListaAllAsignacion:
+        Original2 = str(n)
+        Opti2 = ""
+        R2 = OP.Optimizacion("Bloque", "Eliminacion de codigo muerto Regla 3", Original2, Opti2, fila)
+        OP.agregarOp(R2)
+
+    ListaAllAsignacion = []
+    ListaAsignacion = []
+    ListaAsignacion2 = []
+    fila = 0
+
     t_global.generarTablaTemporales()
+    OP.ReporteOptimizacion()
     t_global.limpiar()
     return mensaje

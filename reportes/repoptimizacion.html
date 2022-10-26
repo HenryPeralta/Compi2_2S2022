@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset = 'utf-8' />
-<title>Tabla de temporales</title>
+<title>Reporte de optimizacion</title>
 <meta name = 'viewport' content = 'initial-scale=1.0; maximum-scale=1.0; width=device-width;'>
 <Style type = 'text/css'>
 @import url(https://fonts.googleapis.com/css?family=Roboto:400,500,700,300,100);;
@@ -120,18 +120,17 @@ td.text-right {
 <body>
 </div>
 <div class='table-title'>
-<h3>Tabla de Temporales</h3>
+<h3>Tabla de Optimizacion</h3>
 </div>
 <table class='table-fill'>
 <thead>
 <tr>
 <th class='text-left'>No.</th>
-<th class='text-left'>Id</th>
-<th class='text-left'>Temporal</th>
-<th class='text-left'>Tipo Dato</th>
-<th class='text-left'>Ambito</th>
+<th class='text-left'>Tipo</th>
+<th class='text-left'>Regla</th>
+<th class='text-left'>Original</th>
+<th class='text-left'>Optimizado</th>
 <th class='text-left'>Fila</th>
-<th class='text-left'>Columna</th>
 </tr>
 </thead>
-<tbody class='table-hover'><tr><td>1</td><td>a</td><td>t0</td><td>I64</td><td>Global</td><td>1</td><td>1</td></tr><tr><td>2</td><td>b</td><td>t1</td><td>I64</td><td>Global</td><td>1</td><td>1</td></tr><tr><td>3</td><td>t1</td><td>t3</td><td>Binaria</td><td>Global</td><td>1</td><td>1</td></tr><tr><td>4</td><td>t2</td><td>t5</td><td>Binaria</td><td>Global</td><td>1</td><td>1</td></tr><tr><td>5</td><td>t3</td><td>t7</td><td>Binaria</td><td>Global</td><td>1</td><td>1</td></tr><tr><td>6</td><td>t4</td><td>t9</td><td>Binaria</td><td>Global</td><td>1</td><td>1</td></tr><tr><td>7</td><td>t5</td><td>t11</td><td>Binaria</td><td>Global</td><td>1</td><td>1</td></tr><tr><td>8</td><td>t6</td><td>t12</td><td></td><td>Global</td><td>1</td><td>1</td></tr><tr><td>9</td><td>t7</td><td>t13</td><td></td><td>Global</td><td>1</td><td>1</td></tr><tr><td>10</td><td>c</td><td>t15</td><td>Binaria</td><td>Global</td><td>1</td><td>1</td></tr>
+<tbody class='table-hover'><tr><td>1</td><td>Bloque</td><td>Propagacion de copias Regla 2</td><td>t4 = t3 / 2;</td><td>t4 = t2 / 2;</td><td>20</td><tr><tr><td>2</td><td>Bloque</td><td>Eliminacion de codigo muerto Regla 3</td><td>t3 = t2;<br/>t4 = t3 / 2;</td><td>t4 = t2 / 2;</td><td>20</td><tr><tr><td>3</td><td>Bloque</td><td>Propagacion de copias Regla 2</td><td>t6 = t0 * t5;</td><td>t6 = 2 * t5;</td><td>38</td><tr><tr><td>4</td><td>Bloque</td><td>Eliminacion de codigo muerto Regla 3</td><td>t0 = 2;<br/>t6 = t0 * t5;</td><td>t6 = 2 * t5;</td><td>38</td><tr><tr><td>5</td><td>Bloque</td><td>Propagacion de copias Regla 2</td><td>t6 = t0 * t5;</td><td>t6 = t0 * t4;</td><td>38</td><tr><tr><td>6</td><td>Bloque</td><td>Eliminacion de codigo muerto Regla 3</td><td>t5 = t4;<br/>t6 = t0 * t5;</td><td>t6 = t0 * t4;</td><td>38</td><tr><tr><td>7</td><td>Bloque</td><td>Propagacion de copias Regla 2</td><td>t8 = t7 * t3;</td><td>t8 = t7 * t2;</td><td>40</td><tr><tr><td>8</td><td>Bloque</td><td>Eliminacion de codigo muerto Regla 3</td><td>t3 = t2;<br/>t8 = t7 * t3;</td><td>t8 = t7 * t2;</td><td>40</td><tr><tr><td>9</td><td>Bloque</td><td>Propagacion de copias Regla 2</td><td>t8 = t7 * t3;</td><td>t8 = t6 * t3;</td><td>40</td><tr><tr><td>10</td><td>Bloque</td><td>Eliminacion de codigo muerto Regla 3</td><td>t7 = t6;<br/>t8 = t7 * t3;</td><td>t8 = t6 * t3;</td><td>40</td><tr><tr><td>11</td><td>Bloque</td><td>Propagacion de copias Regla 2</td><td>t10 = t9 + t1;</td><td>t10 = t9 + 4;</td><td>41</td><tr><tr><td>12</td><td>Bloque</td><td>Eliminacion de codigo muerto Regla 3</td><td>t1 = 4;<br/>t10 = t9 + t1;</td><td>t10 = t9 + 4;</td><td>41</td><tr><tr><td>13</td><td>Bloque</td><td>Propagacion de copias Regla 2</td><td>t10 = t9 + t1;</td><td>t10 = t8 + t1;</td><td>41</td><tr><tr><td>14</td><td>Bloque</td><td>Eliminacion de codigo muerto Regla 3</td><td>t9 = t8;<br/>t10 = t9 + t1;</td><td>t10 = t8 + t1;</td><td>41</td><tr><tr><td>15</td><td>Bloque</td><td>Propagacion de copias Regla 2</td><td>t14 = t11 * t11;</td><td>t14 = t10 * t11;</td><td>46</td><tr><tr><td>16</td><td>Bloque</td><td>Eliminacion de codigo muerto Regla 3</td><td>t11 = t10;<br/>t14 = t11 * t11;</td><td>t14 = t10 * t11;</td><td>46</td><tr><tr><td>17</td><td>Bloque</td><td>Eliminacion de codigo muerto Regla 3</td><td>t12</td><td></td><td>49</td><tr><tr><td>18</td><td>Bloque</td><td>Eliminacion de codigo muerto Regla 3</td><td>t13</td><td></td><td>49</td><tr>
