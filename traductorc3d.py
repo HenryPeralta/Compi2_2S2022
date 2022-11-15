@@ -1,9 +1,12 @@
 import tab_simbolos as TABS
+import tab_errores as TABE
 import gramatica as g
 from expresiones import  *
 from instrucciones import *
 import temporal as T
 import optimizacion as OP
+import math
+from datetime import datetime
 
 t_global = T.Temporales()
 mensaje = ""
@@ -64,6 +67,22 @@ def instruccion_print(instruccion, ts, ambito):
     elif(isinstance(instruccion.exp, ExpresionCaracter)):
         tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
         cadena = c3d + "\t printf(\"%c\", " + str(ord(tmp)) +"); \n"
+        fila += 1
+    elif(isinstance(instruccion.exp, ExpresionAbs)):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d + "\t printf(\"%d\", (int)" + str(tmp) +"); \n"
+        fila += 1
+    elif(isinstance(instruccion.exp, ExpresionSqrt)):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d + "\t printf(\"%d\", (int)" + str(tmp) +"); \n"
+        fila += 1
+    elif(isinstance(instruccion.exp, ExpresionFnLen)):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d + "\t printf(\"%d\", (int)" + str(tmp) +"); \n"
+        fila += 1
+    elif(isinstance(instruccion.exp, ExpresionArreglo)):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d + "\t printf(\"%d\", (int)" + str(tmp) +"); \n"
         fila += 1
     elif(isinstance(instruccion.exp, ExpresionLogica)):
         newT = t_global.etiquetaT()
@@ -133,6 +152,16 @@ def instruccion_print(instruccion, ts, ambito):
     elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == TABS.TIPO_DATO.BOOL or tipos == "bool")):
         tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
         cadena = c3d + "\t printf(\"%f\"," + str(tmp) + "); \n"
+        fila += 1
+
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == "Negativo")):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d + "\t printf(\"%d\", (int)" + str(tmp) + "); \n"
+        fila += 1
+
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == "PosArreglo")):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d + "\t printf(\"%d\", (int)" + str(tmp) + "); \n"
         fila += 1
 
     elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == "Binaria")):
@@ -281,6 +310,26 @@ def instruccion_println(instruccion, ts, ambito):
         cadena = c3d + "\t printf(\"%c\", " + str(ord(tmp)) +"); \n"
         cadena += "\t printf(\"%c\", (int)10); \n"
         fila += 2
+    elif(isinstance(instruccion.exp, ExpresionAbs)):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d + "\t printf(\"%d\", (int)" + str(tmp) +"); \n"
+        cadena += "\t printf(\"%c\", (int)10); \n"
+        fila += 2
+    elif(isinstance(instruccion.exp, ExpresionSqrt)):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d + "\t printf(\"%d\", (int)" + str(tmp) +"); \n"
+        cadena += "\t printf(\"%c\", (int)10); \n"
+        fila += 2
+    elif(isinstance(instruccion.exp, ExpresionFnLen)):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d + "\t printf(\"%d\", (int)" + str(tmp) +"); \n"
+        cadena += "\t printf(\"%c\", (int)10); \n"
+        fila += 2
+    elif(isinstance(instruccion.exp, ExpresionArreglo)):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d + "\t printf(\"%d\", (int)" + str(tmp) +"); \n"
+        cadena += "\t printf(\"%c\", (int)10); \n"
+        fila += 2
     elif(isinstance(instruccion.exp, ExpresionLogica)):
         newT = t_global.etiquetaT()
         LV, LF, c3d = resolver_general(instruccion.exp, ts, ambito)
@@ -361,6 +410,18 @@ def instruccion_println(instruccion, ts, ambito):
     elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == TABS.TIPO_DATO.BOOL or tipos == "bool")):
         tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
         cadena = c3d + "\t printf(\"%f\"," + str(tmp) + "); \n"
+        cadena += "\t printf(\"%c\", (int)10); \n"
+        fila += 2
+
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == "Negativo")):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d + "\t printf(\"%d\", (int)" + str(tmp) + "); \n"
+        cadena += "\t printf(\"%c\", (int)10); \n"
+        fila += 2
+
+    elif(isinstance(instruccion.exp, ExpresionIdentificador) and (tipos == "PosArreglo")):
+        tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
+        cadena = c3d + "\t printf(\"%d\", (int)" + str(tmp) + "); \n"
         cadena += "\t printf(\"%c\", (int)10); \n"
         fila += 2
 
@@ -871,7 +932,7 @@ def resolver_general(exp, ts, ambito):
             return newT, c3d
         if(exp.operador == OPERACIONES_ARITMETICAS.MODULO):
             newT = str(t_global.varTemporal())
-            c3d = exp1 + exp2 + "\t " + newT + " = " + str(tmp1) + " % " + str(tmp2) + "; \n"
+            c3d = exp1 + exp2 + "\t " + newT + " = " + "(int)" + str(tmp1) + " % " + "(int)" + str(tmp2) + "; \n"
             fila += 1
             return newT, c3d
     elif(isinstance(exp, ExpresionIdentificador)):
@@ -903,6 +964,7 @@ def resolver_general(exp, ts, ambito):
             return valorT, ""
     elif(isinstance(exp, ExpresionRelacional)):
         Ltrue, Lfalse, c3d = resolver_relacional(exp, ts, ambito)
+        print(Ltrue,"and", Lfalse)
         return Ltrue, Lfalse, c3d
     elif(isinstance(exp, ExpresionLogica)):
         Ltrue, Lfalse, c3d = resolver_logica(exp, ts, ambito)
@@ -910,6 +972,88 @@ def resolver_general(exp, ts, ambito):
     elif(isinstance(exp, LlamadaFuncion)):
         tmp, c3d = instruccion_llamada_funcion(exp, ts, ambito)
         return tmp, c3d
+    elif(isinstance(exp, ExpresionAbs)):
+        tmp, c3d = resolver_general(exp.exp, ts, ambito)
+        valor = ""
+        for var in t_global.tablaSimbolos:
+            tipo = t_global.obtenerSimbolo(var)
+            if(tipo.temp == tmp):
+                valor = tipo.valor
+        if(isinstance(valor, int)):
+            tmp, c3d = resolver_general(exp.exp, ts, ambito)
+            newT = t_global.varTemporal()
+            c3d += "\t " + newT + " = " + str(tmp) + "; \n"
+            fila += 1
+        elif(isinstance(valor, float)):
+            tmp, c3d = resolver_general(exp.exp, ts, ambito)
+            newT = t_global.varTemporal()
+            c3d += "\t " + newT + " = " + str(tmp) + "; \n"
+            fila += 1
+        else:
+            tmp, c3d = resolver_general(exp.exp, ts, ambito)
+            newT = t_global.varTemporal()
+            c3d += "\t " + newT + " = " + str(tmp) + " * -1; \n"
+            fila += 1
+        return newT, c3d
+    elif(isinstance(exp, ExpresionSqrt)):
+        tmp, c3d = resolver_general(exp.exp, ts, ambito)
+        valor = ""
+        for var in t_global.tablaSimbolos:
+            tipo = t_global.obtenerSimbolo(var)
+            if(tipo.temp == tmp):
+                valor = tipo.valor
+
+        newT = t_global.varTemporal()
+        c3d += "\t " + newT + " = " + str(math.sqrt(valor)) + ";\n"
+        fila += 1
+        return newT, c3d
+    elif(isinstance(exp, Contains)):
+        LV = ""
+        LF = ""
+        c3d = ""
+        tmp, c3did = resolver_general(exp.id, ts, ambito)
+        expresion, c3dexp = resolver_general(exp.exp, ts, ambito)
+        valor = ""
+        valorBool = {}
+        for var in t_global.tablaSimbolos:
+            tipo = t_global.obtenerSimbolo(var)
+            if(tipo.temp == tmp):
+                valor = tipo.valor
+        if(expresion in valor):
+            valorBool = ExpresionBool(True)
+        else:
+            valorBool = ExpresionBool(False)
+        LV, LF, c3d = resolver_general(valorBool, ts, ambito)
+        return LV, LF, c3d
+    elif(isinstance(exp, ExpresionArreglo)):
+        tmp, c3d = resolver_general(exp.id, ts, ambito)
+        pos, c3d = resolver_general(exp.pos, ts, ambito)
+        valor = ""
+        for var in t_global.tablaSimbolos:
+            tipo = t_global.obtenerSimbolo(var)
+            if(tipo.temp == tmp):
+                valor = tipo.valor
+        if(pos < len(valor)):
+            newT = t_global.varTemporal()
+            c3d += "\t " + newT + " = " + str(valor[pos]) + ";\n"
+            fila += 1
+        else:
+            mensajeE = "Error semantico: La posicion sobre pasa el tamaño del arreglo \n"
+            e = TABE.Error(mensajeE, ambito, 0, 0, datetime.now())
+            TABE.agregarError(e)
+            newT = 0
+            c3d = ""
+        return newT, c3d
+    elif(isinstance(exp, ExpresionFnLen)):
+        tmp, c3dexp = resolver_general(exp.exp, ts, ambito)
+        valor = ""
+        tamanio = 0
+        for var in t_global.tablaSimbolos:
+            tipo = t_global.obtenerSimbolo(var)
+            if(tipo.temp == tmp):
+                valor = tipo.valor
+        tamanio = len(valor)
+        return tamanio, c3dexp
     elif(isinstance(exp, ExpresionDobleComilla)):
         cadena = ""
         newT = t_global.varTemporal()
@@ -928,7 +1072,7 @@ def resolver_relacional(expRel, ts, ambito):
     global fila
     if(expRel.operador != OPERACION_RELACIONAL.NOT):
         Ltrue1, Lfalse1, exp1 = resolver_general(expRel.exp1, ts, ambito)
-    Ltrue2, Lfalse2, exp2 = resolver_general(expRel.exp2, ts, ambito)
+        Ltrue2, Lfalse2, exp2 = resolver_general(expRel.exp2, ts, ambito)
     if(expRel.operador == OPERACION_RELACIONAL.AND):
         if(type(Ltrue1) == list):
             c3d = str(exp1) + "\t " + Ltrue1.pop() + ": \n" + str(exp2)
@@ -986,6 +1130,8 @@ def resolver_relacional(expRel, ts, ambito):
             ListaF.append(Lfalse2)
         return ListaV, ListaF, c3d
     elif(expRel.operador == OPERACION_RELACIONAL.NOT):
+        Ltrue2, Lfalse2, exp2 = resolver_general(expRel.exp2, ts, ambito)
+        #temp, cad = resolver_general(expRel.exp2, ts, ambito)
         if(type(Lfalse2) == list):
             c3d = str(exp2) + "\t " + Lfalse2.pop() + ": \n"
             fila += 1
@@ -1210,7 +1356,7 @@ def instruccion_elseif(expElseif, ts, ambito):
                 fila += 1
             else:
                 for n in LV2:
-                    cadena += "\t " + n + "\n"
+                    cadena += "\t " + n + ": \n"
                     fila += 1
             cadena += procesar_instrucciones(listaif.instrucciones, ts, "if_" + ambito)
             cadena += "\t goto " + newL2 + ";\n"
@@ -1341,6 +1487,7 @@ def instruccion_asignacion_mut(asignacion, ts, ambito):
         else:
             newT = t_global.varTemporal()
             print("-----" + newT + "------")
+            print("--> ", asignacion.exp)
             if(isinstance(asignacion.exp, ExpresionDobleComilla)):
                 cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.STRING, True)
@@ -1387,6 +1534,19 @@ def instruccion_asignacion_mut(asignacion, ts, ambito):
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
+
+            elif(isinstance(asignacion.exp, ExpresionNegativa)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "Negativo", True)
+                fila += 1
+                t_global.agregarSimbolo(variable)
+
+            elif(isinstance(asignacion.exp, ExpresionArreglo)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "PosArreglo", True)
+                fila += 1
+                t_global.agregarSimbolo(variable)
+
             elif(isinstance(asignacion.exp, ExpresionBinaria)):
                 cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "Binaria", True)
@@ -1399,16 +1559,49 @@ def instruccion_asignacion_mut(asignacion, ts, ambito):
                 fila += 1
                 t_global.agregarSimbolo(variable)
             else:
-                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
-                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "", True)
-                                
-                #Optimizacion
-                ListaAllAsignacion.append(newT)
-                A2 = OP.Asignacion2(newT, str(tmp), 1)
-                ListaAsignacion2.append(A2)
+                valor = ""
+                for var in t_global.tablaSimbolos:
+                    tipo = t_global.obtenerSimbolo(var)
+                    if(tipo.temp == tmp):
+                        valor = tipo.valor
+                if(isinstance(valor, bool)):
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.BOOL, True)
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
+                elif(isinstance(valor, float)):
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.F64, True)
+                    
+                    #Optimizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
 
-                fila += 1
-                t_global.agregarSimbolo(variable)
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
+                elif(isinstance(valor, int)):
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.I64, True)
+                    
+                    #Optimizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
+
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
+                else:
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "", True)
+                                    
+                    #Optimizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
+
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
     return cadena
 
 def instruccion_asignacion_mut_tipo(asignacion, ts, ambito):
@@ -1570,6 +1763,19 @@ def instruccion_asignacion_mut_tipo(asignacion, ts, ambito):
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
+
+            elif(isinstance(asignacion.exp, ExpresionNegativa)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "Negativo", True)
+                fila += 1
+                t_global.agregarSimbolo(variable)
+
+            elif(isinstance(asignacion.exp, ExpresionArreglo)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "PosArreglo", True)
+                fila += 1
+                t_global.agregarSimbolo(variable)
+
             elif(isinstance(asignacion.exp, ExpresionBinaria)):
                 cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "Binaria", True)
@@ -1582,16 +1788,49 @@ def instruccion_asignacion_mut_tipo(asignacion, ts, ambito):
                 fila += 1
                 t_global.agregarSimbolo(variable)
             else:
-                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
-                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "", True)
-                                
-                #Optmizacion
-                ListaAllAsignacion.append(newT)
-                A2 = OP.Asignacion2(newT, str(tmp), 1)
-                ListaAsignacion2.append(A2)
+                valor = ""
+                for var in t_global.tablaSimbolos:
+                    tipo = t_global.obtenerSimbolo(var)
+                    if(tipo.temp == tmp):
+                        valor = tipo.valor
+                if(isinstance(valor, bool)):
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.BOOL, True)
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
+                elif(isinstance(valor, float)):
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.F64, True)
+                    
+                    #Optimizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
 
-                fila += 1
-                t_global.agregarSimbolo(variable)
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
+                elif(isinstance(valor, int)):
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.I64, True)
+                    
+                    #Optimizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
+
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
+                else:
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "", True)
+                                    
+                    #Optimizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
+
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
     return cadena
 
 def instruccion_asignacion_no_mut(asignacion, ts, ambito):
@@ -1753,6 +1992,19 @@ def instruccion_asignacion_no_mut(asignacion, ts, ambito):
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
+
+            elif(isinstance(asignacion.exp, ExpresionNegativa)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "Negativo", True)
+                fila += 1
+                t_global.agregarSimbolo(variable)
+
+            elif(isinstance(asignacion.exp, ExpresionArreglo)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "PosArreglo", True)
+                fila += 1
+                t_global.agregarSimbolo(variable)
+
             elif(isinstance(asignacion.exp, ExpresionBinaria)):
                 cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "Binaria", True)
@@ -1765,16 +2017,49 @@ def instruccion_asignacion_no_mut(asignacion, ts, ambito):
                 fila += 1
                 t_global.agregarSimbolo(variable)
             else:
-                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
-                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "", False)
-                                
-                #Optmizacion
-                ListaAllAsignacion.append(newT)
-                A2 = OP.Asignacion2(newT, str(tmp), 1)
-                ListaAsignacion2.append(A2)
+                valor = ""
+                for var in t_global.tablaSimbolos:
+                    tipo = t_global.obtenerSimbolo(var)
+                    if(tipo.temp == tmp):
+                        valor = tipo.valor
+                if(isinstance(valor, bool)):
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.BOOL, True)
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
+                elif(isinstance(valor, float)):
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.F64, True)
+                    
+                    #Optimizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
 
-                fila += 1
-                t_global.agregarSimbolo(variable)
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
+                elif(isinstance(valor, int)):
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.I64, True)
+                    
+                    #Optimizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
+
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
+                else:
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "", True)
+                                    
+                    #Optimizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
+
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
     return cadena
 
 def instruccion_asignacion_no_mut_tipo(asignacion, ts, ambito):
@@ -1936,6 +2221,19 @@ def instruccion_asignacion_no_mut_tipo(asignacion, ts, ambito):
 
                 fila += 1
                 t_global.agregarSimbolo(variable)
+
+            elif(isinstance(asignacion.exp, ExpresionNegativa)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "Negativo", True)
+                fila += 1
+                t_global.agregarSimbolo(variable)
+
+            elif(isinstance(asignacion.exp, ExpresionArreglo)):
+                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "PosArreglo", True)
+                fila += 1
+                t_global.agregarSimbolo(variable)
+
             elif(isinstance(asignacion.exp, ExpresionBinaria)):
                 cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
                 variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "Binaria", True)
@@ -1948,16 +2246,49 @@ def instruccion_asignacion_no_mut_tipo(asignacion, ts, ambito):
                 fila += 1
                 t_global.agregarSimbolo(variable)
             else:
-                cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
-                variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "", False)
-                                
-                #Optmizacion
-                ListaAllAsignacion.append(newT)
-                A2 = OP.Asignacion2(newT, str(tmp), 1)
-                ListaAsignacion2.append(A2)
+                valor = ""
+                for var in t_global.tablaSimbolos:
+                    tipo = t_global.obtenerSimbolo(var)
+                    if(tipo.temp == tmp):
+                        valor = tipo.valor
+                if(isinstance(valor, bool)):
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.BOOL, True)
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
+                elif(isinstance(valor, float)):
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.F64, True)
+                    
+                    #Optimizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
 
-                fila += 1
-                t_global.agregarSimbolo(variable)
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
+                elif(isinstance(valor, int)):
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, TABS.TIPO_DATO.I64, True)
+                    
+                    #Optimizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
+
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
+                else:
+                    cadena += c3d + "\t " + newT + " = " + str(tmp) + "; \n"
+                    variable = T.tipoSimbolo(newT, asignacion.id, tmp, 1, 1, "local", ambito, "", True)
+                                    
+                    #Optimizacion
+                    ListaAllAsignacion.append(newT)
+                    A2 = OP.Asignacion2(newT, str(tmp), 1)
+                    ListaAsignacion2.append(A2)
+
+                    fila += 1
+                    t_global.agregarSimbolo(variable)
     return cadena
 
 def instruccion_asignacion_nuevo_valor(asignacion, ts, ambito):
@@ -2072,6 +2403,9 @@ def instruccion_asignacion_nuevo_valor(asignacion, ts, ambito):
                         fila += 1
             else:
                 print("La variable no es mutable")
+                mensajeE = "Error semantico: La variable no es mutable \n"
+                e = TABE.Error(mensajeE, ambito, asignacion.linea, asignacion.columna, datetime.now())
+                TABE.agregarError(e)
     return cadena
 
 def instruccion_ciclo_while(instruccion, ts, ambito):
@@ -2168,17 +2502,35 @@ def instruccion_ciclo_for(instruccion, ts, ambito):
         cadena += "\t goto " + Lsalto + "; \n"
         cadena += "\t " + Lfalse + ": \n"
         fila += 4
-    return cadena 
-    #elif(type(instruccion.exp1) == list):
-    #    for i in instruccion.exp1:
-    #        tmp1, c3d1 = resolver_general(i, ts, "for_" + ambito)
-    #        asignar = AsignacionMutable(instruccion.id, ExpresionNumero(tmp1), instruccion.linea, instruccion.columna)
-    #        cadena += c3d1
-    #        cadena += instruccion_asignacion_mut(asignar, ts, "for_" + ambito)
-    #        cadena += procesar_instrucciones(instruccion.instrucciones, ts, "for_" + ambito)
-    #    return cadena
-    #else:
-    #    tmp, c3d = resolver_general(instruccion.exp1, ts, "for_" + ambito)
+        return cadena 
+
+    elif(type(instruccion.exp1) == list):
+        for i in instruccion.exp1:
+            tmp1, c3d1 = resolver_general(i, ts, "for_" + ambito)
+            asignar = AsignacionMutable(instruccion.id, ExpresionNumero(tmp1), instruccion.linea, instruccion.columna)
+            cadena += c3d1
+            cadena += instruccion_asignacion_mut(asignar, ts, "for_" + ambito)
+            cadena += procesar_instrucciones(instruccion.instrucciones, ts, "for_" + ambito)
+        return cadena
+    else:
+        tmp, c3d = resolver_general(instruccion.exp1, ts, "for_" + ambito)
+        cadena += c3d
+        newI = t_global.varTemporal()
+        newV = t_global.varTemporal()
+        Ltrue = t_global.etiquetaT()
+        Lsalto = t_global.etiquetaT()
+        cadena += "\t " + newI + " = " + tmp + ";\n"
+        variable = T.tipoSimbolo(newV, instruccion.id, tmp, 1, 1, 'local', ambito, TABS.TIPO_DATO.CHAR, True)
+        t_global.agregarSimbolo(variable)
+        cadena += "\t " + Lsalto + ":\n"
+        cadena += "\t "+ newV + " = " + "heap[(int)" + newI + "];\n"
+        cadena += "\t if("+ newV + " == -1) goto "+ Ltrue + ";\n"
+        cadena += procesar_instrucciones(instruccion.instrucciones, ts, "for_" + ambito)
+        cadena += "\t " + newI + " = " + newI + " + 1;\n"
+        cadena += "\t goto "+ Lsalto +";\n"
+        cadena += "\t " + Ltrue + ":\n"
+        fila += 7
+        return cadena
 
 def instruccion_funcion(funcion, ts, ambito):
     global t_global, cadenafuncion, Lista_return, fila
@@ -2187,6 +2539,7 @@ def instruccion_funcion(funcion, ts, ambito):
     pos = 1
     for n in funcion.listaparametro:
         newT = t_global.varTemporal()
+        print("El valor del parametro en la funcion: ", n.tipo)
         parametro = T.tipoSimbolo(newT, n.id, "", 1, str(pos), "PAR", ambito, n.tipo, True)
         t_global.agregarSimbolo(parametro)
         pos += 1
@@ -2479,6 +2832,203 @@ def instruccion_asignacion_vector_no_mutable_tipo(instruccion, ts, ambito):
     t_global.agregarSimbolo(simbolo)
     return cadena
 
+def instruccion_push(instruccion, ts, ambito):
+    global posH, t_global, fila
+    cadena = ""
+    listaValor = []
+    listac3d = []
+    exp, c3dz = resolver_general(instruccion.exp, ts, ambito)
+    valorT = ""
+    valorV = ""
+    pos = ""
+    valorM = False
+    comprobar = False
+    for var in t_global.tablaSimbolos:
+        tipo = t_global.obtenerSimbolo(var)
+        if(tipo.nombre == instruccion.id):
+            valorV = tipo.valor
+            valorT = tipo.temp
+            valorR = tipo.rol
+            pos = tipo.pos
+            valorM = tipo.mutable
+            comprobar = True
+            valorV.append(exp)
+            actualizarSimbolo = T.tipoSimbolo(valorT, tipo.nombre, valorV, 1, pos, valorR, ambito, tipo.tipo, True)
+            t_global.actualizarSimbolo(var, actualizarSimbolo)
+        if(comprobar):
+            if(valorM == True):
+                print(valorV)
+                for n in valorV:
+                    tmpx, c3d = resolver_general(ExpresionNumero(n), ts, ambito)
+                    listac3d.append(c3d)
+                    listaValor.append(tmpx)
+                cadena += "\t " + valorT + " = H; \n"
+                fila += 1
+                x = 0
+                for n in listaValor:
+                    cadena += listac3d[x]
+                    cadena += "\t heap[(int)H] = " + str(n) + "; \n"
+                    cadena += "\t H = H + 1; \n"
+                    posH += 1
+                    x += 1
+                    fila += 2
+                cadena += "\t heap[(int)H] = -1; \n"
+                cadena += "\t H = H + 1; \n"
+                posH += 1
+                fila += 2
+            else:
+                print("La variable no es mutable")
+                mensajeE = "Error semantico: La variable no es mutable \n"
+                e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                TABE.agregarError(e)
+                
+    return cadena
+
+def instruccion_insert(instruccion, ts, ambito):
+    global posH, t_global, fila
+    cadena = ""
+    listaValor = []
+    listac3d = []
+    posI, c3di = resolver_general(instruccion.pos, ts, ambito)
+    exp, c3dz = resolver_general(instruccion.exp, ts, ambito)
+    valorT = ""
+    valorV = ""
+    pos = ""
+    valorM = False
+    comprobar = False
+    for var in t_global.tablaSimbolos:
+        tipo = t_global.obtenerSimbolo(var)
+        if(tipo.nombre == instruccion.id):
+            valorV = tipo.valor
+            valorT = tipo.temp
+            valorR = tipo.rol
+            pos = tipo.pos
+            valorM = tipo.mutable
+            comprobar = True
+            print("Posicion: ",posI)
+            print("Expresion: ",exp)
+            valorV.insert(posI, exp)
+            actualizarSimbolo = T.tipoSimbolo(valorT, tipo.nombre, valorV, 1, pos, valorR, ambito, tipo.tipo, True)
+            t_global.actualizarSimbolo(var, actualizarSimbolo)
+        if(comprobar):
+            if(valorM == True):
+                print(valorV)
+                for n in valorV:
+                    tmpx, c3d = resolver_general(ExpresionNumero(n), ts, ambito)
+                    listac3d.append(c3d)
+                    listaValor.append(tmpx)
+                cadena += "\t " + valorT + " = H; \n"
+                fila += 1
+                x = 0
+                for n in listaValor:
+                    cadena += listac3d[x]
+                    cadena += "\t heap[(int)H] = " + str(n) + "; \n"
+                    cadena += "\t H = H + 1; \n"
+                    posH += 1
+                    x += 1
+                    fila += 2
+                cadena += "\t heap[(int)H] = -1; \n"
+                cadena += "\t H = H + 1; \n"
+                posH += 1
+                fila += 2
+            else:
+                print("La variable no es mutable")
+                mensajeE = "Error semantico: La variable no es mutable \n"
+                e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                TABE.agregarError(e)
+    return cadena
+
+def instruccion_remove(instruccion, ts, ambito):
+    global posH, t_global, fila
+    cadena = ""
+    listaValor = []
+    listac3d = []
+    posR, c3di = resolver_general(instruccion.pos, ts, ambito)
+    valorT = ""
+    valorV = ""
+    pos = ""
+    valorM = False
+    comprobar = False
+    for var in t_global.tablaSimbolos:
+        tipo = t_global.obtenerSimbolo(var)
+        if(tipo.nombre == instruccion.id):
+            valorV = tipo.valor
+            valorT = tipo.temp
+            valorR = tipo.rol
+            pos = tipo.pos
+            valorM = tipo.mutable
+            comprobar = True
+            del valorV[posR]
+            actualizarSimbolo = T.tipoSimbolo(valorT, tipo.nombre, valorV, 1, pos, valorR, ambito, tipo.tipo, True)
+            t_global.actualizarSimbolo(var, actualizarSimbolo)
+        if(comprobar):
+            if(valorM == True):
+                print(valorV)
+                for n in valorV:
+                    tmpx, c3d = resolver_general(ExpresionNumero(n), ts, ambito)
+                    listac3d.append(c3d)
+                    listaValor.append(tmpx)
+                cadena += "\t " + valorT + " = H; \n"
+                fila += 1
+                x = 0
+                for n in listaValor:
+                    cadena += listac3d[x]
+                    cadena += "\t heap[(int)H] = " + str(n) + "; \n"
+                    cadena += "\t H = H + 1; \n"
+                    posH += 1
+                    x += 1
+                    fila += 2
+                cadena += "\t heap[(int)H] = -1; \n"
+                cadena += "\t H = H + 1; \n"
+                posH += 1
+                fila += 2
+            else:
+                print("La variable no es mutable")
+                mensajeE = "Error semantico: La variable no es mutable \n"
+                e = TABE.Error(mensajeE, ambito, instruccion.linea, instruccion.columna, datetime.now())
+                TABE.agregarError(e)
+    return cadena
+
+def instruccion_vector_vacio_mutable(instruccion, ts, ambito):
+    global posH, t_global, fila
+    cadena = ""
+    newT = t_global.varTemporal()
+    simbolo = T.tipoSimbolo(newT, instruccion.id, [], 0, posH, "local", ambito, "Arreglo", True)
+    cadena += "\t " + newT + " = H; \n"
+    fila += 1
+    x = 0
+    cadena += "\t heap[(int)H] = " + str(0) + "; \n"
+    cadena += "\t H = H + 1; \n"
+    posH += 1
+    x += 1
+    fila += 2
+    cadena += "\t heap[(int)H] = -1; \n"
+    cadena += "\t H = H + 1; \n"
+    posH += 1
+    fila += 2
+    t_global.agregarSimbolo(simbolo)
+    return cadena
+
+def instruccion_vector_vacio_no_mutable(instruccion, ts, ambito):
+    global posH, t_global, fila
+    cadena = ""
+    newT = t_global.varTemporal()
+    simbolo = T.tipoSimbolo(newT, instruccion.id, [], 0, posH, "local", ambito, "Arreglo", True)
+    cadena += "\t " + newT + " = H; \n"
+    fila += 1
+    x = 0
+    cadena += "\t heap[(int)H] = " + str(0) + "; \n"
+    cadena += "\t H = H + 1; \n"
+    posH += 1
+    x += 1
+    fila += 2
+    cadena += "\t heap[(int)H] = -1; \n"
+    cadena += "\t H = H + 1; \n"
+    posH += 1
+    fila += 2
+    t_global.agregarSimbolo(simbolo)
+    return cadena
+
 def procesar_instrucciones(instrucciones, ts, ambito):
     print(instrucciones)
     global existe_break, existe_continue, Lista_Break, Lista_Continue, t_global, fila
@@ -2531,6 +3081,16 @@ def procesar_instrucciones(instrucciones, ts, ambito):
             cadena += instruccion_asignacion_vector_no_mutable(instruccion, ts, ambito)
         elif(isinstance(instruccion, AsignacionVectorNoMutableTipo)):
             cadena += instruccion_asignacion_vector_no_mutable_tipo(instruccion, ts, ambito)
+        elif(isinstance(instruccion, Push)):
+            cadena += instruccion_push(instruccion, ts, ambito)
+        elif(isinstance(instruccion, Insert)):
+            cadena += instruccion_insert(instruccion, ts, ambito)
+        elif(isinstance(instruccion, Remove)):
+            cadena += instruccion_remove(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionVectorVacioMutable)):
+            cadena += instruccion_vector_vacio_mutable(instruccion, ts, ambito)
+        elif(isinstance(instruccion, AsignacionVectorVacioNoMutable)):
+            cadena += instruccion_vector_vacio_no_mutable(instruccion, ts, ambito)
 
         elif(isinstance(instruccion, InstruccionReturn)):
             tmp, c3d = resolver_general(instruccion.exp, ts, ambito)
@@ -2602,5 +3162,6 @@ def datosC3D(inputs):
 
     t_global.generarTablaTemporales()
     OP.ReporteOptimizacion()
+    TABE.GenerarTablaErrores()
     t_global.limpiar()
     return mensaje
